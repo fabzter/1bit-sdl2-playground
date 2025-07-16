@@ -1,5 +1,7 @@
 #include "engine.hpp"
 #include <iostream>
+#include "scene.hpp"
+#include "../scenes/game_scene.hpp" // Include our concrete scene
 
 Engine::Engine() = default;
 Engine::~Engine() {
@@ -39,22 +41,30 @@ bool Engine::init() {
     
     m_resourceManager = std::make_unique<ResourceManager>();
 
-    std::vector<std::string> assetsToPreload = {
-        "player"
-        // "enemy_ship", "bullet", "explosion", etc.
-    };
+    // Set up the initial scene
+    // TODO: make the engine manage scenes in an more general way such that we can organize it without modifying the engine
+    m_currentScene = std::make_unique<GameScene>();
+    m_currentScene->load(m_renderer.get(), m_resourceManager.get());
 
-    // 4. Preload all required assets at once
-    m_resourceManager->preloadTextures(m_renderer.get(), assetsToPreload);
+    m_lastFrameTime = SDL_GetPerformanceCounter();
     m_isRunning = true;
     return true;
 }
 
 void Engine::run() {
-    while (m_isRunning) {
+    mainLoop();
+}
+
+void Engine::mainLoop() {
+     while (m_isRunning) {
         handleEvents();
         update();
         render();
+    }
+
+    // Unload the current scene before quitting
+    if (m_currentScene) {
+        m_currentScene->unload();
     }
 }
 
@@ -64,19 +74,29 @@ void Engine::handleEvents() {
         if (event.type == SDL_QUIT) {
             m_isRunning = false;
         }
+        if (m_currentScene) {
+            m_currentScene->handleEvents(event);
+        }
     }
 }
 
 void Engine::update() {
-    // Game logic updates will go here
+    uint64_t now = SDL_GetPerformanceCounter();
+    float deltaTime = (now - m_lastFrameTime) / static_cast<float>(SDL_GetPerformanceFrequency());
+    m_lastFrameTime = now;
+
+    if (m_currentScene) {
+        m_currentScene->update(deltaTime);
+    }
 }
 
 void Engine::render() {
     SDL_SetRenderDrawColor(m_renderer.get(), 15, 15, 15, 255); // A dark grey background
     SDL_RenderClear(m_renderer.get());
 
-    // All drawing commands will be called from the render system
-    m_renderSystem->draw(m_renderer.get(), *m_resourceManager);
+    if (m_currentScene) {
+        m_currentScene->render(m_renderer.get());
+    }
 
     SDL_RenderPresent(m_renderer.get());
 }

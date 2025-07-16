@@ -17,6 +17,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(game
     src/core/main.cpp
     src/core/engine.cpp
+    src/scenes/game_scene.cpp
     src/systems/renderer.cpp
     src/util/texture_loader.cpp
     src/util/resource_manager.cpp
