@@ -13,6 +13,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
+# Add our vendor directory to the include paths
+include_directories(src/vendor/entt/include)
+
 # Define the Executable
 add_executable(game
     src/core/main.cpp
