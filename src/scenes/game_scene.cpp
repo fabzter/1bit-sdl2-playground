@@ -16,12 +16,20 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager) {
     };
 
     // This is our explicit preload step for the scene!
-    m_resourceManager->preloadTextures(renderer, assetsToPreload);
+    m_resourceManager->preloadSpriteAssets(renderer, assetsToPreload);
 
-    // Create player entity
+    // --- Create Player Entity ---
     const auto player = m_registry.create();
-    m_registry.emplace<TransformComponent>(player, Vec2f{0.0f, 0.0f});
-    m_registry.emplace<SpriteComponent>(player, "player", 16, 16);
+
+    // 1. Get the loaded sprite asset from the resource manager
+    const SpriteAsset* playerAsset = m_resourceManager->getSpriteAsset(renderer, "player");
+
+    if (playerAsset) {
+        // 2. Use the asset's data to construct our components
+        m_registry.emplace<TransformComponent>(player, Vec2f{0.0f, 0.0f}, Vec2f{1.0f, 1.0f});
+        m_registry.emplace<SpriteComponent>(player, playerAsset->assetId, playerAsset->width, playerAsset->height);
+    }
+    // --- End Player Entity ---
 
     std::cout << "GameScene loaded." << std::endl;
 }

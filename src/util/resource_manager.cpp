@@ -20,34 +20,30 @@ ResourceManager::ResourceManager() {
 
 ResourceManager::~ResourceManager() = default; // Smart pointers handle cleanup
 
-SDL_Texture* ResourceManager::getTexture(SDL_Renderer* renderer, const std::string& assetId) {
-    // Check if the texture is already in our cache
-    auto it = m_textureCache.find(assetId);
-    if (it != m_textureCache.end()) {
+const SpriteAsset *ResourceManager::getSpriteAsset(SDL_Renderer *renderer, const std::string &assetId) {
+    auto it = m_spriteAssetCache.find(assetId);
+    if (it != m_spriteAssetCache.end()) {
         return it->second.get();
     }
 
-    // It's not cached, so let's load it.
-    // We construct the full path: /path/to/executable/res/sprites/assetId.sprite
     std::string fullPath = m_basePath + "res/sprites/" + assetId + ".sprite";
-    std::cout << "Loading texture from: " << fullPath << std::endl;
+    std::cout << "Loading sprite asset from: " << fullPath << std::endl;
 
-    SDL_Texture* rawTexture = TextureLoader::loadFromSpriteFile(renderer, fullPath);
-    if (rawTexture) {
-        // Store it in the cache. `emplace` is slightly more efficient than
-        // operator[] as it constructs the std::unique_ptr in-place.
-        m_textureCache.emplace(assetId, rawTexture);
-        return rawTexture;
+    std::unique_ptr<SpriteAsset> asset = TextureLoader::loadFromSpriteFile(renderer, assetId, fullPath);
+    if (asset) {
+        // We emplace the loaded asset into the cache and return a raw pointer to it.
+        // The unique_ptr in the map continues to own the memory.
+        auto [inserted_it, success] = m_spriteAssetCache.emplace(assetId, std::move(asset));
+        return inserted_it->second.get();
     }
 
-    // Return nullptr if loading failed
     return nullptr;
 }
 
-void ResourceManager::preloadTextures(SDL_Renderer* renderer, const std::vector<std::string>& assetIds) {
-    std::cout << "Preloading " << assetIds.size() << " texture(s)..." << std::endl;
+void ResourceManager::preloadSpriteAssets(SDL_Renderer* renderer, const std::vector<std::string>& assetIds) {
+    std::cout << "Preloading " << assetIds.size() << " sprite asset(s)..." << std::endl;
     for (const auto& assetId : assetIds) {
-        getTexture(renderer, assetId); // This will load and cache the texture if not already present
+        getSpriteAsset(renderer, assetId);
     }
     std::cout << "Preloading complete." << std::endl;
 }

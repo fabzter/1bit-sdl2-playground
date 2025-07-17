@@ -21,11 +21,13 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
         const auto& transform = view.get<const TransformComponent>(entity);
         const auto& sprite = view.get<const SpriteComponent>(entity);
 
-        SDL_Texture* texture = resourceManager.getTexture(renderer, sprite.assetId);
-        if (!texture) {
-            std::cerr << "RenderSystem::draw - Texture not found for assetId: " << sprite.assetId << std::endl;
-            continue; // Skip this entity if its texture is missing
+        const SpriteAsset* asset = resourceManager.getSpriteAsset(renderer, sprite.assetId);
+        if (!asset || !asset->texture) {
+            std::cerr << "RenderSystem::draw - Asset not found for id: " << sprite.assetId << std::endl;
+            continue;
         }
+
+        SDL_Texture* texture = asset->texture.get();
 
         // Use component data to define where and how to draw the sprite
         SDL_FRect destRect = {
@@ -35,11 +37,9 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
             sprite.height * transform.scale.y
         };
 
-        // Apply tinting
         SDL_SetTextureColorMod(texture, sprite.color.r, sprite.color.g, sprite.color.b);
         SDL_SetTextureAlphaMod(texture, sprite.color.a);
 
-        // Render the texture
         SDL_RenderCopyF(renderer, texture, NULL, &destRect);
     }
 }
