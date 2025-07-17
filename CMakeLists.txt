@@ -14,7 +14,7 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 # Add our vendor directory to the include paths
-include_directories(src/vendor/entt/include)
+include_directories(src/vendor/entt/single_include)
 
 # Define the Executable
 add_executable(game
