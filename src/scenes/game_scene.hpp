@@ -3,6 +3,7 @@
 #include "../core/scene.hpp"
 #include "../systems/renderer.hpp"
 #include <memory>
+#include <entt/entt.hpp>
 
 class ResourceManager; // Forward declaration
 
@@ -20,4 +21,5 @@ public:
 private:
     std::unique_ptr<RenderSystem> m_renderSystem;
     ResourceManager* m_resourceManager = nullptr; // Non-owning pointer
+    entt::registry m_registry; // The ECS registry for this scene
 };

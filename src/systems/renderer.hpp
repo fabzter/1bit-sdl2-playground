@@ -2,15 +2,14 @@
 
 #include <SDL2/SDL.h>
 #include "../util/resource_manager.hpp"
+#include <entt/entt.hpp>
 
 class RenderSystem {
 public:
     RenderSystem() = default;
     ~RenderSystem();
 
-    // The draw call is now responsible for loading the texture
-    // on its first run, a real system would be more complex.
-    void draw(SDL_Renderer* renderer, ResourceManager& resourceManager);
+    void draw(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager);
 
 private:
 };

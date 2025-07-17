@@ -47,4 +47,8 @@ struct SpriteComponent {
      * @brief Accumulator for timing frame transitions.
      */
     float animationTimer = 0.0f;
+
+    SpriteComponent() = default;
+    SpriteComponent(std::string id, int w, int h, int z = 0)
+        : assetId(std::move(id)), width(w), height(h), zIndex(z) {}
 };
