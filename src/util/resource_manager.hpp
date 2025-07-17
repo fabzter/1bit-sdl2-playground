@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 #include <SDL2/SDL.h>
-#include "texture_loader.hpp"
+#include "sprite_asset_loader.hpp"
 
 // Forward-declare the custom deleter
 struct SDL_Texture_Deleter;

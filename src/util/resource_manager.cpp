@@ -29,10 +29,18 @@ const SpriteAsset *ResourceManager::getSpriteAsset(SDL_Renderer *renderer, const
     std::string fullPath = m_basePath + "res/sprites/" + assetId + ".sprite";
     std::cout << "Loading sprite asset from: " << fullPath << std::endl;
 
-    std::unique_ptr<SpriteAsset> asset = TextureLoader::loadFromSpriteFile(renderer, assetId, fullPath);
+    std::unique_ptr<SpriteAsset> asset = SpriteAssetLoader::loadFromFile(renderer, fullPath);
     if (asset) {
-        // We emplace the loaded asset into the cache and return a raw pointer to it.
-        // The unique_ptr in the map continues to own the memory.
+        // We still use the requested assetId as the key for the cache.
+
+        // Enforce that the ID in the file matches the requested assetId.
+        if (asset->assetId != assetId) {
+            std::cerr << "Asset ID Mismatch! File '" << fullPath
+                      << "' has SPRITE_NAME '" << asset->assetId
+                      << "' but was requested with ID '" << assetId << "'." << std::endl;
+            return nullptr; // Return nullptr to indicate a loading failure.
+        }
+
         auto [inserted_it, success] = m_spriteAssetCache.emplace(assetId, std::move(asset));
         return inserted_it->second.get();
     }

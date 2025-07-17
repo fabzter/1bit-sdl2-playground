@@ -22,7 +22,7 @@ add_executable(game
     src/core/engine.cpp
     src/scenes/game_scene.cpp
     src/systems/renderer.cpp
-    src/util/texture_loader.cpp
+        src/util/sprite_asset_loader.cpp
     src/util/resource_manager.cpp
 )
 

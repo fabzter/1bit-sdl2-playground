@@ -1,12 +1,12 @@
-#include "texture_loader.hpp"
+#include "sprite_asset_loader.hpp"
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <sstream>
 
-std::unique_ptr<SpriteAsset> TextureLoader::loadFromSpriteFile(SDL_Renderer* renderer,
-    const std::string& assetId, const std::string& filepath) {
+std::unique_ptr<SpriteAsset> SpriteAssetLoader::loadFromFile(SDL_Renderer* renderer,
+    const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
         std::cerr << "Failed to open sprite file: " << filepath << std::endl;
@@ -14,7 +14,6 @@ std::unique_ptr<SpriteAsset> TextureLoader::loadFromSpriteFile(SDL_Renderer* ren
     }
 
     auto asset = std::make_unique<SpriteAsset>();
-    asset->assetId = assetId;
 
     std::vector<uint32_t> pixels;
     std::unordered_map<char, uint32_t> palette;
@@ -35,7 +34,7 @@ std::unique_ptr<SpriteAsset> TextureLoader::loadFromSpriteFile(SDL_Renderer* ren
         ss >> key;
 
         if (key == "SPRITE_NAME") {
-            // we could eventually use this to load sprite names and Key
+            ss >> asset->assetId; // <-- Assign assetId from file content
         }
         else if (key == "SPRITE_SIZE") {
             ss >> asset->width >> asset->height;
@@ -85,19 +84,19 @@ std::unique_ptr<SpriteAsset> TextureLoader::loadFromSpriteFile(SDL_Renderer* ren
         }
     }
 
-    if (asset->width == 0 || asset->height == 0 || pixels.empty()) {
-        std::cerr << "Invalid sprite file format or missing data: " << filepath << std::endl;
+    //TODO: accept assets without id, generate a random guid.
+    if (asset->assetId.empty() || asset->width == 0 || asset->height == 0 || pixels.empty()) {
+        std::cerr << "Invalid or incomplete sprite file: " << filepath << std::endl;
         return nullptr;
     }
 
     SDL_Texture* rawTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_STATIC, asset->width, asset->height);
-
     if (!rawTexture) {
         std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
         return nullptr;
     }
-    
+
     SDL_SetTextureBlendMode(rawTexture, SDL_BLENDMODE_BLEND);
     SDL_UpdateTexture(rawTexture, NULL, pixels.data(), asset->width * sizeof(uint32_t));
 
