@@ -42,11 +42,15 @@ bool Engine::init() {
         std::cerr << "Renderer Creation Error: " << SDL_GetError() << std::endl;
         return false;
     }
+
+    m_inputManager = std::make_unique<InputManager>();
+    setupDefaultInputs();
     
     m_resourceManager = std::make_unique<ResourceManager>();
 
     //setup scenes
-    m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(), m_resourceManager.get());
+    m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(),
+        m_resourceManager.get(), m_inputManager.get());
     registerScenes();
     m_sceneManager->switchTo("game"); // set initial scene
 
@@ -79,11 +83,14 @@ void Engine::mainLoop() {
 }
 
 void Engine::handleEvents() {
+    m_inputManager->prepareForUpdate();
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             m_isRunning = false;
         }
+        m_inputManager->handleEvent(event);
         m_sceneManager->handleEvents(event);
     }
 }
@@ -103,4 +110,24 @@ void Engine::render() {
     m_sceneManager->render();
 
     SDL_RenderPresent(m_renderer.get());
+}
+
+void Engine::setupDefaultInputs() {
+    // Keyboard
+    m_inputManager->mapKeyToAction(SDLK_w, "move_up");
+    m_inputManager->mapKeyToAction(SDLK_UP, "move_up");
+    m_inputManager->mapKeyToAction(SDLK_s, "move_down");
+    m_inputManager->mapKeyToAction(SDLK_DOWN, "move_down");
+    m_inputManager->mapKeyToAction(SDLK_a, "move_left");
+    m_inputManager->mapKeyToAction(SDLK_LEFT, "move_left");
+    m_inputManager->mapKeyToAction(SDLK_d, "move_right");
+    m_inputManager->mapKeyToAction(SDLK_RIGHT, "move_right");
+    m_inputManager->mapKeyToAction(SDLK_SPACE, "action_button");
+
+    // Controller
+    m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_DPAD_UP, "move_up");
+    m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_DPAD_DOWN, "move_down");
+    m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_DPAD_LEFT, "move_left");
+    m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_DPAD_RIGHT, "move_right");
+    m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_A, "action_button"); // 'A' on Xbox, 'Cross' on PS
 }

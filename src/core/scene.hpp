@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include "input_manager.hpp"
 
 class ResourceManager; // Forward declaration
 
@@ -10,7 +11,8 @@ public:
 
     // Called when the scene is first set as active.
     // Use this to load assets, create entities, etc.
-    virtual void load(SDL_Renderer* renderer, ResourceManager* resourceManager) = 0;
+    virtual void load(SDL_Renderer* renderer, ResourceManager* resourceManager,
+         InputManager* inputManager) = 0;
 
     // Called when the scene is being deactivated.
     // Use this to clean up resources specific to this scene.

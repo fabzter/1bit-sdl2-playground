@@ -1,8 +1,9 @@
 #include "scene_manager.hpp"
 #include <iostream>
 
-SceneManager::SceneManager(SDL_Renderer* renderer, ResourceManager* resourceManager)
-    : m_renderer(renderer), m_resourceManager(resourceManager) {}
+SceneManager::SceneManager(SDL_Renderer* renderer, ResourceManager* resourceManager,
+    InputManager* inputManager)
+    : m_renderer(renderer), m_resourceManager(resourceManager), m_inputManager(inputManager) {}
 
 SceneManager::~SceneManager() {
     shutdown();
@@ -28,7 +29,7 @@ void SceneManager::switchTo(const std::string& id) {
     // Create and load the new scene using its factory
     m_currentScene = it->second();
     std::cout << "SceneManager: Switching to scene '" << id << "'." << std::endl;
-    m_currentScene->load(m_renderer, m_resourceManager);
+    m_currentScene->load(m_renderer, m_resourceManager, m_inputManager);
 }
 
 void SceneManager::handleEvents(const SDL_Event& event) {

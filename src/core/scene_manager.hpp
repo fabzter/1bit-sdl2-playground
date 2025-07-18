@@ -10,7 +10,8 @@
 
 class SceneManager {
 public:
-    SceneManager(SDL_Renderer* renderer, ResourceManager* resourceManager);
+    SceneManager(SDL_Renderer* renderer, ResourceManager* resourceManager,
+        InputManager* inputManager);
     ~SceneManager();
 
     // Disallow copying
@@ -45,6 +46,7 @@ private:
     // Non-owning pointers to the engine's core resources
     SDL_Renderer* m_renderer;
     ResourceManager* m_resourceManager;
+    InputManager* m_inputManager;
 
     std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> m_sceneFactories;
     std::unique_ptr<Scene> m_currentScene;

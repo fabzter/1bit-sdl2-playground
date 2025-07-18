@@ -5,10 +5,16 @@
 #include <iostream>
 #include <vector>
 
-void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager) {
+#include "../components/player_control.hpp"
+
+void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
+                     InputManager* inputManager) {
     m_resourceManager = resourceManager;
+    m_inputManager = inputManager;
+
     m_renderSystem = std::make_unique<RenderSystem>();
     m_animationSystem = std::make_unique<AnimationSystem>();
+    m_playerControlSystem = std::make_unique<PlayerControlSystem>();
 
     std::cout << "GameScene loading..." << std::endl;
     std::vector<std::string> assetsToPreload = {
@@ -21,6 +27,9 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager) {
 
     // --- Create Player Entity ---
     const auto player = m_registry.create();
+
+    // tag player as controllable
+    m_registry.emplace<PlayerControlComponent>(player);
 
     // 1. Get the loaded sprite asset from the resource manager
     const SpriteAsset* playerAsset = m_resourceManager->getSpriteAsset(renderer, "player");
@@ -49,6 +58,7 @@ void GameScene::handleEvents(const SDL_Event& event) {
 }
 
 void GameScene::update(float deltaTime) {
+    m_playerControlSystem->update(m_registry, *m_inputManager, deltaTime);
     m_animationSystem->update(m_registry, deltaTime, *m_resourceManager);
 }
 
