@@ -2,10 +2,10 @@
 #include "../util/resource_manager.hpp"
 #include "../components/transform.hpp"
 #include "../components/sprite.hpp"
+#include "../components/player_control.hpp"
+#include "../components/movement.hpp"
 #include <iostream>
 #include <vector>
-
-#include "../components/player_control.hpp"
 
 void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
                      InputManager* inputManager) {
@@ -30,6 +30,9 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
 
     // tag player as controllable
     m_registry.emplace<PlayerControlComponent>(player);
+
+    // Add the new MovementComponent with a starting speed
+    m_registry.emplace<MovementComponent>(player, 200.0f);
 
     // 1. Get the loaded sprite asset from the resource manager
     const SpriteAsset* playerAsset = m_resourceManager->getSpriteAsset(renderer, "player");
