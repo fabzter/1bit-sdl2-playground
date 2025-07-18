@@ -1,5 +1,6 @@
 #include "input_manager.hpp"
 #include <iostream>
+#include <cmath>
 
 InputManager::InputManager() {
     if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0) {
@@ -20,14 +21,13 @@ InputManager::~InputManager() {
 void InputManager::prepareForUpdate() {
     // This is the key to single-frame event detection.
     // At the start of a new frame, the "current" state from last frame becomes the "previous" state.
-    for (auto& pair : m_actionStates) {
+    for (auto& pair : m_stateActions) {
         pair.second.was_pressed = pair.second.is_pressed;
     }
 }
 
 void InputManager::handleEvent(const SDL_Event& event) {
     std::string actionName;
-    bool newPressedState = false;
 
     switch(event.type) {
         // --- Keyboard ---
@@ -38,8 +38,7 @@ void InputManager::handleEvent(const SDL_Event& event) {
                 actionName = it->second;
                 // Don't process key repeats
                 if (!event.key.repeat) {
-                    newPressedState = (event.type == SDL_KEYDOWN);
-                    m_actionStates[actionName].is_pressed = newPressedState;
+                    m_stateActions[actionName].is_pressed = (event.type == SDL_KEYDOWN);
                 }
             }
             break;
@@ -51,8 +50,25 @@ void InputManager::handleEvent(const SDL_Event& event) {
             auto it = m_buttonActionMap.find(static_cast<SDL_GameControllerButton>(event.cbutton.button));
             if (it != m_buttonActionMap.end()) {
                 actionName = it->second;
-                newPressedState = (event.type == SDL_CONTROLLERBUTTONDOWN);
-                m_actionStates[actionName].is_pressed = newPressedState;
+                m_stateActions[actionName].is_pressed = (event.type == SDL_CONTROLLERBUTTONDOWN);
+            }
+            break;
+        }
+
+            // --- Controller Axes (Axis Actions) --- (NEW)
+        case SDL_CONTROLLERAXISMOTION: {
+            auto it = m_axisActionMap.find(static_cast<SDL_GameControllerAxis>(event.caxis.axis));
+            if (it != m_axisActionMap.end()) {
+                actionName = it->second;
+                float rawValue = event.caxis.value;
+
+                // Apply dead zone and normalize the value from -32768->32767 to -1.0->1.0
+                if (std::abs(rawValue) > m_joystickDeadZone) {
+                    //TODO: check if it is ok that this normalization value is hardcoded
+                    m_axisActions[actionName].value = rawValue / 32767.0f;
+                } else {
+                    m_axisActions[actionName].value = 0.0f;
+                }
             }
             break;
         }
@@ -68,31 +84,45 @@ void InputManager::handleEvent(const SDL_Event& event) {
 }
 
 bool InputManager::isActionPressed(const std::string& actionName) const {
-    auto it = m_actionStates.find(actionName);
-    return (it != m_actionStates.end()) && it->second.is_pressed;
+    auto it = m_stateActions.find(actionName);
+    return (it != m_stateActions.end()) && it->second.is_pressed;
 }
 
 bool InputManager::isActionJustPressed(const std::string& actionName) const {
-    auto it = m_actionStates.find(actionName);
+    auto it = m_stateActions.find(actionName);
     // True only on the single frame it was first pressed.
-    return (it != m_actionStates.end()) && it->second.is_pressed && !it->second.was_pressed;
+    return (it != m_stateActions.end()) && it->second.is_pressed && !it->second.was_pressed;
 }
 
 bool InputManager::isActionJustReleased(const std::string& actionName) const {
-    auto it = m_actionStates.find(actionName);
+    auto it = m_stateActions.find(actionName);
     // True only on the single frame it was released.
-    return (it != m_actionStates.end()) && !it->second.is_pressed && it->second.was_pressed;
+    return (it != m_stateActions.end()) && !it->second.is_pressed && it->second.was_pressed;
 }
 
 
 void InputManager::mapKeyToAction(SDL_Keycode key, const std::string& actionName) {
     m_keyActionMap[key] = actionName;
-    m_actionStates[actionName] = {false, false}; // Ensure the action exists
+    m_stateActions[actionName] = {false, false}; // Ensure the action exists
 }
 
 void InputManager::mapButtonToAction(SDL_GameControllerButton button, const std::string& actionName) {
     m_buttonActionMap[button] = actionName;
-    m_actionStates[actionName] = {false, false}; // Ensure the action exists
+    m_stateActions[actionName] = {false, false}; // Ensure the action exists
+}
+
+// --- Axis Action Implementations ---
+float InputManager::getAxisValue(const std::string& actionName) const {
+    auto it = m_axisActions.find(actionName);
+    if (it != m_axisActions.end()) {
+        return it->second.value;
+    }
+    return 0.0f;
+}
+
+void InputManager::mapAxisToAction(SDL_GameControllerAxis axis, const std::string& actionName) {
+    m_axisActionMap[axis] = actionName;
+    m_axisActions[actionName] = { 0.0f }; // Ensure the action exists
 }
 
 void InputManager::openController(int deviceIndex) {

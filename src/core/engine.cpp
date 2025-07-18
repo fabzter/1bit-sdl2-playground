@@ -130,4 +130,8 @@ void Engine::setupDefaultInputs() {
     m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_DPAD_LEFT, "move_left");
     m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_DPAD_RIGHT, "move_right");
     m_inputManager->mapButtonToAction(SDL_CONTROLLER_BUTTON_A, "action_button"); // 'A' on Xbox, 'Cross' on PS
+
+    // --- Axis Actions ---
+    m_inputManager->mapAxisToAction(SDL_CONTROLLER_AXIS_LEFTX, "move_horizontal");
+    m_inputManager->mapAxisToAction(SDL_CONTROLLER_AXIS_LEFTY, "move_vertical");
 }
