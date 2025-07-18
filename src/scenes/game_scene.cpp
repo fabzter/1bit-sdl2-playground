@@ -8,6 +8,7 @@
 void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager) {
     m_resourceManager = resourceManager;
     m_renderSystem = std::make_unique<RenderSystem>();
+    m_animationSystem = std::make_unique<AnimationSystem>();
 
     std::cout << "GameScene loading..." << std::endl;
     std::vector<std::string> assetsToPreload = {
@@ -26,8 +27,10 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager) {
 
     if (playerAsset) {
         // 2. Use the asset's data to construct our components
-        m_registry.emplace<TransformComponent>(player, Vec2f{0.0f, 0.0f}, Vec2f{1.0f, 1.0f});
-        m_registry.emplace<SpriteComponent>(player, playerAsset->assetId, playerAsset->width, playerAsset->height);
+        m_registry.emplace<TransformComponent>(player, Vec2f{0.0f, 0.0f}, Vec2f{4.0f, 4.0f});
+        auto& sprite = m_registry.emplace<SpriteComponent>(player, playerAsset->assetId, playerAsset->width, playerAsset->height);
+        sprite.isAnimated = true; //TODO: probably should activate automatically depending on sprite data
+        sprite.currentState = "idle"; //TODO: probably should load a default state based on component or sprite data
     }
     // --- End Player Entity ---
 
@@ -47,7 +50,7 @@ void GameScene::handleEvents(const SDL_Event& event) {
 }
 
 void GameScene::update(float deltaTime) {
-    // The `Engine::update` is now empty, so game logic updates for this scene go here.
+    m_animationSystem->update(m_registry, deltaTime, *m_resourceManager);
 }
 
 void GameScene::render(SDL_Renderer* renderer) {

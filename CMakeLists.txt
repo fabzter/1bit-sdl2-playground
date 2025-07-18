@@ -25,6 +25,7 @@ add_executable(game
         src/util/sprite_asset_loader.cpp
     src/util/resource_manager.cpp
         src/core/scene_manager.cpp
+        src/systems/animation.cpp
 )
 
 # Link SDL2 to the Executable
