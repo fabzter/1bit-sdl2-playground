@@ -5,6 +5,10 @@
 
 Engine::Engine() = default;
 Engine::~Engine() {
+    m_sceneManager.reset();
+    m_resourceManager.reset();
+    m_renderer.reset();
+    m_window.reset();
     SDL_Quit();
 }
 
@@ -41,14 +45,25 @@ bool Engine::init() {
     
     m_resourceManager = std::make_unique<ResourceManager>();
 
-    // Set up the initial scene
-    // TODO: make the engine manage scenes in an more general way such that we can organize it without modifying the engine
-    m_currentScene = std::make_unique<GameScene>();
-    m_currentScene->load(m_renderer.get(), m_resourceManager.get());
+    //setup scenes
+    m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(), m_resourceManager.get());
+    registerScenes();
+    m_sceneManager->switchTo("game"); // set initial scene
 
     m_lastFrameTime = SDL_GetPerformanceCounter();
     m_isRunning = true;
     return true;
+}
+
+void Engine::registerScenes() {
+    m_sceneManager->registerScene("game", []() {
+        return std::make_unique<GameScene>();
+    });
+
+    // Example: When you create a main menu, you'll just add it here:
+    // m_sceneManager->registerScene("main_menu", []() {
+    //     return std::make_unique<MainMenuScene>();
+    // });
 }
 
 void Engine::run() {
@@ -61,11 +76,6 @@ void Engine::mainLoop() {
         update();
         render();
     }
-
-    // Unload the current scene before quitting
-    if (m_currentScene) {
-        m_currentScene->unload();
-    }
 }
 
 void Engine::handleEvents() {
@@ -74,9 +84,7 @@ void Engine::handleEvents() {
         if (event.type == SDL_QUIT) {
             m_isRunning = false;
         }
-        if (m_currentScene) {
-            m_currentScene->handleEvents(event);
-        }
+        m_sceneManager->handleEvents(event);
     }
 }
 
@@ -85,18 +93,14 @@ void Engine::update() {
     float deltaTime = (now - m_lastFrameTime) / static_cast<float>(SDL_GetPerformanceFrequency());
     m_lastFrameTime = now;
 
-    if (m_currentScene) {
-        m_currentScene->update(deltaTime);
-    }
+    m_sceneManager->update(deltaTime);
 }
 
 void Engine::render() {
     SDL_SetRenderDrawColor(m_renderer.get(), 15, 15, 15, 255); // A dark grey background
     SDL_RenderClear(m_renderer.get());
 
-    if (m_currentScene) {
-        m_currentScene->render(m_renderer.get());
-    }
+    m_sceneManager->render();
 
     SDL_RenderPresent(m_renderer.get());
 }
