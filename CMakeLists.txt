@@ -7,6 +7,22 @@ project(1bit-playground VERSION 1.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
+# Compiler flags to put each function/data in its own section
+set(DEAD_CODE_STRIPPING_FLAGS "-ffunction-sections -fdata-sections")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${DEAD_CODE_STRIPPING_FLAGS}")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${DEAD_CODE_STRIPPING_FLAGS}")
+
+# Linker flag to remove unused sections (platform-specific)
+if(APPLE)
+    set(DEAD_STRIP_LINKER_FLAG "-Wl,-dead_strip")
+else()
+    set(DEAD_STRIP_LINKER_FLAG "-Wl,--gc-sections")
+endif()
+
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${DEAD_STRIP_LINKER_FLAG}")
+set(CMAKE_EXE_LINKER_FLAGS_MINSIZEREL "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL} ${DEAD_STRIP_LINKER_FLAG}")
 
 # Find SDL2 Library
 # On macOS, you can install this with Homebrew: `brew install sdl2`
