@@ -30,7 +30,6 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager) {
         m_registry.emplace<TransformComponent>(player, Vec2f{0.0f, 0.0f}, Vec2f{4.0f, 4.0f});
         auto& sprite = m_registry.emplace<SpriteComponent>(player, playerAsset->assetId, playerAsset->width, playerAsset->height);
         sprite.isAnimated = true; //TODO: probably should activate automatically depending on sprite data
-        sprite.currentState = "idle"; //TODO: probably should load a default state based on component or sprite data
     }
     // --- End Player Entity ---
 
