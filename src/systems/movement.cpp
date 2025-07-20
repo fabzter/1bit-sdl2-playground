@@ -1,0 +1,35 @@
+#include "movement.hpp"
+#include "../components/action_intent.hpp"
+#include "../components/transform.hpp"
+#include "../components/movement.hpp"
+#include "../components/sprite.hpp"
+#include <iostream>
+
+void MovementSystem::update(entt::registry& registry, float deltaTime) {
+    // This system acts on any entity that has an intent, a transform, and movement stats.
+    auto view = registry.view<const ActionIntentComponent, TransformComponent,
+    const MovementComponent, SpriteComponent>();
+
+    for (auto entity : view) {
+        const auto& intent = view.get<const ActionIntentComponent>(entity);
+        auto& transform = view.get<TransformComponent>(entity);
+        const auto& movement = view.get<const MovementComponent>(entity);
+        auto& sprite = view.get<SpriteComponent>(entity);
+
+        // Apply the movement based on the intent and the entity's speed
+        transform.position.x += movement.speed * intent.moveDirection.x * deltaTime;
+        transform.position.y += movement.speed * intent.moveDirection.y * deltaTime;
+
+        // Update animation based on intent
+        if (intent.moveDirection.x != 0.0f || intent.moveDirection.y != 0.0f) {
+            sprite.currentState = "walk";
+        } else {
+            sprite.currentState = "idle";
+        }
+
+        // Handle one-shot actions from intent
+        if (intent.actionJustPressed) {
+            std::cout << "Action Button Processed by MovementSystem!" << std::endl;
+        }
+    }
+}

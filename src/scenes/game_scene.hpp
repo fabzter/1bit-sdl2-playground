@@ -5,6 +5,7 @@
 #include "../systems/renderer.hpp"
 #include "../systems/animation.hpp"
 #include "../systems/player_control.hpp"
+#include "../systems/movement.hpp"
 
 class ResourceManager; // Forward declaration
 
@@ -23,6 +24,7 @@ private:
     std::unique_ptr<RenderSystem> m_renderSystem;
     std::unique_ptr<AnimationSystem> m_animationSystem;
     std::unique_ptr<PlayerControlSystem> m_playerControlSystem;
+    std::unique_ptr<MovementSystem> m_movementSystem;
 
     ResourceManager* m_resourceManager = nullptr;
     InputManager* m_inputManager = nullptr;
