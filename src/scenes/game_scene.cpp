@@ -4,7 +4,7 @@
 #include "../components/sprite.hpp"
 #include "../components/player_control.hpp"
 #include "../components/movement.hpp"
-#include "../components/action_intent.hpp"
+#include "../components/intent.hpp"
 #include <iostream>
 #include <vector>
 
@@ -15,8 +15,8 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
 
     m_renderSystem = std::make_unique<RenderSystem>();
     m_animationSystem = std::make_unique<AnimationSystem>();
-    m_playerControlSystem = std::make_unique<PlayerControlSystem>();
-    m_movementSystem = std::make_unique<MovementSystem>();
+    m_playerIntentSystem = std::make_unique<PlayerIntentSystem>();
+    m_topDownMovementSystem = std::make_unique<TopDownMovementSystem>();
 
     std::cout << "GameScene loading..." << std::endl;
     std::vector<std::string> assetsToPreload = {
@@ -36,7 +36,7 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     // Add the new MovementComponent with a starting speed
     m_registry.emplace<MovementComponent>(player, 200.0f); //TODO: is this the right place to set player speed?
 
-    m_registry.emplace<ActionIntentComponent>(player);
+    m_registry.emplace<IntentComponent>(player);
 
     // 1. Get the loaded sprite asset from the resource manager
     const SpriteAsset* playerAsset = m_resourceManager->getSpriteAsset(renderer, "player");
@@ -66,8 +66,8 @@ void GameScene::handleEvents(const SDL_Event& event) {
 
 void GameScene::update(float deltaTime) {
     // Update systems in logical order
-    m_playerControlSystem->update(m_registry, *m_inputManager, deltaTime); // 1. Populate intent
-    m_movementSystem->update(m_registry, deltaTime); // 2. Apply movement from intent
+    m_playerIntentSystem->update(m_registry, *m_inputManager, deltaTime); // 1. Populate intent
+    m_topDownMovementSystem->update(m_registry, deltaTime); // 2. Apply movement from intent
 
     m_animationSystem->update(m_registry, deltaTime, *m_resourceManager);
 }

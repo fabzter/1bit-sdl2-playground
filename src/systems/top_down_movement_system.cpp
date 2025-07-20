@@ -1,17 +1,17 @@
-#include "movement.hpp"
-#include "../components/action_intent.hpp"
+#include "top_down_movement_system.hpp"
+#include "../components/intent.hpp"
 #include "../components/transform.hpp"
 #include "../components/movement.hpp"
 #include "../components/sprite.hpp"
 #include <iostream>
 
-void MovementSystem::update(entt::registry& registry, float deltaTime) {
+void TopDownMovementSystem::update(entt::registry& registry, float deltaTime) {
     // This system acts on any entity that has an intent, a transform, and movement stats.
-    auto view = registry.view<const ActionIntentComponent, TransformComponent,
+    auto view = registry.view<const IntentComponent, TransformComponent,
     const MovementComponent, SpriteComponent>();
 
     for (auto entity : view) {
-        const auto& intent = view.get<const ActionIntentComponent>(entity);
+        const auto& intent = view.get<const IntentComponent>(entity);
         auto& transform = view.get<TransformComponent>(entity);
         const auto& movement = view.get<const MovementComponent>(entity);
         auto& sprite = view.get<SpriteComponent>(entity);
@@ -29,7 +29,7 @@ void MovementSystem::update(entt::registry& registry, float deltaTime) {
 
         // Handle one-shot actions from intent
         if (intent.actionJustPressed) {
-            std::cout << "Action Button Processed by MovementSystem!" << std::endl;
+            std::cout << "Action Button Processed by TopDownMovementSystem!" << std::endl;
         }
     }
 }

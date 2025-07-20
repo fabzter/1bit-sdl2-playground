@@ -4,8 +4,8 @@
 #include "../core/scene.hpp"
 #include "../systems/renderer.hpp"
 #include "../systems/animation.hpp"
-#include "../systems/player_control.hpp"
-#include "../systems/movement.hpp"
+#include "../systems/player_intent_system.hpp"
+#include "../systems/top_down_movement_system.hpp"
 
 class ResourceManager; // Forward declaration
 
@@ -23,8 +23,8 @@ public:
 private:
     std::unique_ptr<RenderSystem> m_renderSystem;
     std::unique_ptr<AnimationSystem> m_animationSystem;
-    std::unique_ptr<PlayerControlSystem> m_playerControlSystem;
-    std::unique_ptr<MovementSystem> m_movementSystem;
+    std::unique_ptr<PlayerIntentSystem> m_playerIntentSystem;
+    std::unique_ptr<TopDownMovementSystem> m_topDownMovementSystem;
 
     ResourceManager* m_resourceManager = nullptr;
     InputManager* m_inputManager = nullptr;

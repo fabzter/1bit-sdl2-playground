@@ -2,9 +2,9 @@
 
 #include <entt/entt.hpp>
 
-class MovementSystem {
+class TopDownMovementSystem {
 public:
-    MovementSystem() = default;
+    TopDownMovementSystem() = default;
 
     void update(entt::registry& registry, float deltaTime);
 };

@@ -43,8 +43,8 @@ add_executable(game
         src/core/scene_manager.cpp
         src/systems/animation.cpp
         src/core/input_manager.cpp
-        src/systems/player_control.cpp
-        src/systems/movement.cpp
+        src/systems/player_intent_system.cpp
+        src/systems/top_down_movement_system.cpp
 )
 
 # Link SDL2 to the Executable

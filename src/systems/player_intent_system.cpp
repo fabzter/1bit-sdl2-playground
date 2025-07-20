@@ -1,17 +1,17 @@
-#include "player_control.hpp"
+#include "player_intent_system.hpp"
 #include "../components/player_control.hpp"
-#include "../components/action_intent.hpp"
+#include "../components/intent.hpp"
 #include "../components/transform.hpp"
 #include "../components/sprite.hpp"
 #include "../components/movement.hpp"
 #include <iostream>
 
-void PlayerControlSystem::update(entt::registry& registry, const InputManager& inputManager,
+void PlayerIntentSystem::update(entt::registry& registry, const InputManager& inputManager,
     float deltaTime) {
-    auto view = registry.view<PlayerControlComponent, ActionIntentComponent>();
+    auto view = registry.view<PlayerControlComponent, IntentComponent>();
 
     for (auto entity : view) {
-        auto& intent = view.get<ActionIntentComponent>(entity);
+        auto& intent = view.get<IntentComponent>(entity);
 
         // Reset intent for this frame
         intent.moveDirection = {0.0f, 0.0f};
