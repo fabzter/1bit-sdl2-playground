@@ -7,11 +7,23 @@
 #include "../systems/player_intent_system.hpp"
 #include "../systems/top_down_movement_system.hpp"
 
-class ResourceManager; // Forward declaration
+// Forward-declare systems and managers
+class RenderSystem;
+class AnimationSystem;
+class PlayerIntentSystem;
+class TopDownMovementSystem;
+
+class ResourceManager;
+class InputManager;
 
 class GameScene : public Scene {
 public:
-    GameScene() = default;
+    GameScene(
+        PlayerIntentSystem* playerIntentSystem,
+        TopDownMovementSystem* topDownMovementSystem,
+        AnimationSystem* animationSystem,
+        RenderSystem* renderSystem
+    );
     ~GameScene() override = default;
 
     void load(SDL_Renderer* renderer, ResourceManager* resourceManager, InputManager* inputManager) override;
@@ -21,10 +33,10 @@ public:
     void render(SDL_Renderer* renderer) override;
 
 private:
-    std::unique_ptr<RenderSystem> m_renderSystem;
-    std::unique_ptr<AnimationSystem> m_animationSystem;
-    std::unique_ptr<PlayerIntentSystem> m_playerIntentSystem;
-    std::unique_ptr<TopDownMovementSystem> m_topDownMovementSystem;
+    RenderSystem* m_renderSystem;
+    AnimationSystem* m_animationSystem;
+    PlayerIntentSystem* m_playerIntentSystem;
+    TopDownMovementSystem* m_topDownMovementSystem;
 
     ResourceManager* m_resourceManager = nullptr;
     InputManager* m_inputManager = nullptr;

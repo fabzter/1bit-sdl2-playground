@@ -7,7 +7,6 @@
 class RenderSystem {
 public:
     RenderSystem() = default;
-    ~RenderSystem();
 
     void draw(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager);
 

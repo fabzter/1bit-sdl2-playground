@@ -3,9 +3,6 @@
 #include "../components/sprite.hpp"
 #include <iostream>
 
-RenderSystem::~RenderSystem() {
-}
-
 void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
     ResourceManager& resourceManager) {
     // Get the screen dimensions to center entities if needed

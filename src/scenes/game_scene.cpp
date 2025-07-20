@@ -8,15 +8,21 @@
 #include <iostream>
 #include <vector>
 
+GameScene::GameScene(
+    PlayerIntentSystem* playerIntentSystem,
+    TopDownMovementSystem* topDownMovementSystem,
+    AnimationSystem* animationSystem,
+    RenderSystem* renderSystem)
+    : m_playerIntentSystem(playerIntentSystem),
+      m_topDownMovementSystem(topDownMovementSystem),
+      m_animationSystem(animationSystem),
+      m_renderSystem(renderSystem)
+{}
+
 void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
                      InputManager* inputManager) {
     m_resourceManager = resourceManager;
     m_inputManager = inputManager;
-
-    m_renderSystem = std::make_unique<RenderSystem>();
-    m_animationSystem = std::make_unique<AnimationSystem>();
-    m_playerIntentSystem = std::make_unique<PlayerIntentSystem>();
-    m_topDownMovementSystem = std::make_unique<TopDownMovementSystem>();
 
     std::cout << "GameScene loading..." << std::endl;
     std::vector<std::string> assetsToPreload = {
@@ -29,18 +35,14 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
 
     // --- Create Player Entity ---
     const auto player = m_registry.create();
-
     // tag player as controllable
     m_registry.emplace<PlayerControlComponent>(player);
-
     // Add the new MovementComponent with a starting speed
     m_registry.emplace<MovementComponent>(player, 200.0f); //TODO: is this the right place to set player speed?
-
     m_registry.emplace<IntentComponent>(player);
 
     // 1. Get the loaded sprite asset from the resource manager
     const SpriteAsset* playerAsset = m_resourceManager->getSpriteAsset(renderer, "player");
-
     if (playerAsset) {
         // 2. Use the asset's data to construct our components
         m_registry.emplace<TransformComponent>(player, Vec2f{0.0f, 0.0f}, Vec2f{4.0f, 4.0f});
@@ -56,8 +58,7 @@ void GameScene::unload() {
     std::cout << "GameScene unloading..." << std::endl;
     // In a more complex scenario, you might unload scene-specific assets here
     // to free up memory.
-    m_registry.clear(); // clear entities and components
-    m_renderSystem.reset();
+    m_registry.clear();
 }
 
 void GameScene::handleEvents(const SDL_Event& event) {
@@ -73,5 +74,6 @@ void GameScene::update(float deltaTime) {
 }
 
 void GameScene::render(SDL_Renderer* renderer) {
+    // Note: resource manager is still passed directly here, which is fine.
     m_renderSystem->draw(renderer, m_registry, *m_resourceManager);
 }

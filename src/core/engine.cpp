@@ -5,15 +5,16 @@
 
 Engine::Engine() = default;
 Engine::~Engine() {
-    m_sceneManager.reset();
-    m_resourceManager.reset();
-    m_renderer.reset();
-    m_window.reset();
     SDL_Quit();
 }
 
 bool Engine::init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        std::cerr << "SDL Initialization Error: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    if (SDL_Init(SDL_INIT_GAMECONTROLLER) != 0) {
         std::cerr << "SDL Initialization Error: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -43,16 +44,21 @@ bool Engine::init() {
         return false;
     }
 
+    // Initialize managers and systems
+    m_resourceManager = std::make_unique<ResourceManager>();
     m_inputManager = std::make_unique<InputManager>();
     setupDefaultInputs();
-    
-    m_resourceManager = std::make_unique<ResourceManager>();
 
-    //setup scenes
-    m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(),
-        m_resourceManager.get(), m_inputManager.get());
+    m_playerIntentSystem = std::make_unique<PlayerIntentSystem>();
+    m_topDownMovementSystem = std::make_unique<TopDownMovementSystem>();
+    m_animationSystem = std::make_unique<AnimationSystem>();
+    m_renderSystem = std::make_unique<RenderSystem>();
+
+    // SceneManager is created last as it may depend on the others for its scenes.
+    m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(), m_resourceManager.get(), m_inputManager.get());
+
     registerScenes();
-    m_sceneManager->switchTo("game"); // set initial scene
+    m_sceneManager->switchTo("game");
 
     m_lastFrameTime = SDL_GetPerformanceCounter();
     m_isRunning = true;
@@ -60,14 +66,16 @@ bool Engine::init() {
 }
 
 void Engine::registerScenes() {
-    m_sceneManager->registerScene("game", []() {
-        return std::make_unique<GameScene>();
+    // The lambda now captures `this` to access the engine's system pointers.
+    m_sceneManager->registerScene("game", [this]() {
+        // We no longer create systems here. We pass the ones the engine owns.
+        return std::make_unique<GameScene>(
+            m_playerIntentSystem.get(),
+            m_topDownMovementSystem.get(),
+            m_animationSystem.get(),
+            m_renderSystem.get()
+        );
     });
-
-    // Example: When you create a main menu, you'll just add it here:
-    // m_sceneManager->registerScene("main_menu", []() {
-    //     return std::make_unique<MainMenuScene>();
-    // });
 }
 
 void Engine::run() {
