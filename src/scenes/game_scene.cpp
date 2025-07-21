@@ -9,14 +9,15 @@
 #include <vector>
 
 GameScene::GameScene(
-    PlayerIntentSystem* playerIntentSystem,
-    TopDownMovementSystem* topDownMovementSystem,
-    AnimationSystem* animationSystem,
-    RenderSystem* renderSystem)
-    : m_playerIntentSystem(playerIntentSystem),
-      m_topDownMovementSystem(topDownMovementSystem),
-      m_animationSystem(animationSystem),
-      m_renderSystem(renderSystem)
+    std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
+    std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
+    std::unique_ptr<AnimationSystem> animationSystem,
+    std::unique_ptr<RenderSystem> renderSystem)
+    : m_playerIntentSystem(std::move(playerIntentSystem)),
+      m_topDownMovementSystem(std::move(topDownMovementSystem)),
+      m_animationSystem(std::move(animationSystem)),
+      m_renderSystem(std::move(renderSystem))
+
 {}
 
 void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,

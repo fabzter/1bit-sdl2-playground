@@ -19,10 +19,10 @@ class InputManager;
 class GameScene : public Scene {
 public:
     GameScene(
-        PlayerIntentSystem* playerIntentSystem,
-        TopDownMovementSystem* topDownMovementSystem,
-        AnimationSystem* animationSystem,
-        RenderSystem* renderSystem
+        std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
+        std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
+        std::unique_ptr<AnimationSystem> animationSystem,
+        std::unique_ptr<RenderSystem> renderSystem
     );
     ~GameScene() override = default;
 
@@ -35,10 +35,10 @@ public:
     void render(SDL_Renderer* renderer) override;
 
 private:
-    RenderSystem* m_renderSystem;
-    AnimationSystem* m_animationSystem;
-    PlayerIntentSystem* m_playerIntentSystem;
-    TopDownMovementSystem* m_topDownMovementSystem;
+    std::unique_ptr<RenderSystem> m_renderSystem;
+    std::unique_ptr<AnimationSystem> m_animationSystem;
+    std::unique_ptr<PlayerIntentSystem> m_playerIntentSystem;
+    std::unique_ptr<TopDownMovementSystem> m_topDownMovementSystem;
 
     ResourceManager* m_resourceManager = nullptr;
     InputManager* m_inputManager = nullptr;

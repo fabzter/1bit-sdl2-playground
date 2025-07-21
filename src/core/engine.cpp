@@ -5,6 +5,11 @@
 
 Engine::Engine() = default;
 Engine::~Engine() {
+    m_sceneManager.reset(); // Explicitly reset SceneManager before other managers
+    m_inputManager.reset();
+    m_resourceManager.reset();
+    m_renderer.reset();
+    m_window.reset();
     SDL_Quit();
 }
 
@@ -49,36 +54,17 @@ bool Engine::init() {
     m_inputManager = std::make_unique<InputManager>();
     setupDefaultInputs();
 
-    m_playerIntentSystem = std::make_unique<PlayerIntentSystem>();
-    m_topDownMovementSystem = std::make_unique<TopDownMovementSystem>();
-    m_animationSystem = std::make_unique<AnimationSystem>();
-    m_renderSystem = std::make_unique<RenderSystem>();
-
     // SceneManager is created last as it may depend on the others for its scenes.
-    m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(), m_resourceManager.get(), m_inputManager.get());
-
-    registerScenes();
-    m_sceneManager->switchTo("game");
+    m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(),
+        m_resourceManager.get(), m_inputManager.get());
 
     m_lastFrameTime = SDL_GetPerformanceCounter();
     m_isRunning = true;
     return true;
 }
 
-void Engine::registerScenes() {
-    // The lambda now captures `this` to access the engine's system pointers.
-    m_sceneManager->registerScene("game", [this]() {
-        // We no longer create systems here. We pass the ones the engine owns.
-        return std::make_unique<GameScene>(
-            m_playerIntentSystem.get(),
-            m_topDownMovementSystem.get(),
-            m_animationSystem.get(),
-            m_renderSystem.get()
-        );
-    });
-}
-
-void Engine::run() {
+void Engine::run(const std::string& initialSceneId) {
+    m_sceneManager->switchTo(initialSceneId);
     mainLoop();
 }
 
@@ -88,6 +74,10 @@ void Engine::mainLoop() {
         update();
         render();
     }
+}
+
+void Engine::registerSceneFactory(const std::string& id, std::function<std::unique_ptr<Scene>()> factory) {
+    m_sceneManager->registerScene(id, std::move(factory));
 }
 
 void Engine::handleEvents() {

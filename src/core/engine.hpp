@@ -6,12 +6,6 @@
 #include "scene_manager.hpp"
 #include "input_manager.hpp"
 
-// systems
-#include "../systems/player_intent_system.hpp"
-#include "../systems/top_down_movement_system.hpp"
-#include "../systems/animation.hpp"
-#include "../systems/renderer.hpp"
-
 // Custom deleters for SDL resources to use with smart pointers
 struct SDL_Deleter {
     void operator()(SDL_Window* window) const { SDL_DestroyWindow(window); }
@@ -26,18 +20,21 @@ public:
     ~Engine();
 
     bool init();
-    void run();
+    void run(const std::string& initialSceneId);
 
     [[nodiscard]]
     SDL_Renderer* getRenderer() const { return m_renderer.get(); }
     ResourceManager* getResourceManager() { return m_resourceManager.get(); }
+    SceneManager* getSceneManager() { return m_sceneManager.get(); }
+
+    // This allows the user to add their own scene factories
+    void registerSceneFactory(const std::string& id, std::function<std::unique_ptr<Scene>()> factory);
 
 private:
     void handleEvents();
     void update();
     void render();
     void mainLoop();
-    void registerScenes();
     void setupDefaultInputs();
 
     // --- Member Declaration Order Matters for Destruction! ---
@@ -52,13 +49,7 @@ private:
     std::unique_ptr<ResourceManager> m_resourceManager;
     std::unique_ptr<InputManager> m_inputManager;
 
-    // 3. Systems (may depend on managers)
-    std::unique_ptr<PlayerIntentSystem> m_playerIntentSystem;
-    std::unique_ptr<TopDownMovementSystem> m_topDownMovementSystem;
-    std::unique_ptr<AnimationSystem> m_animationSystem;
-    std::unique_ptr<RenderSystem> m_renderSystem;
-
-    // 4. Scene Manager (depends on systems and managers, must be destructed first)
+    // 3. Scene Manager (depends on systems and managers, must be destructed first)
     std::unique_ptr<SceneManager> m_sceneManager;
 
     // --- State Variables ---
