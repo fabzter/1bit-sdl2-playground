@@ -45,6 +45,7 @@ add_executable(game
         src/core/input_manager.cpp
         src/systems/player_intent_system.cpp
         src/systems/top_down_movement_system.cpp
+        src/util/input_config_loader.cpp
 )
 
 # Link SDL2 to the Executable

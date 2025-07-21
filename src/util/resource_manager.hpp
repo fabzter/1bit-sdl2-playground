@@ -22,6 +22,8 @@ public:
     const SpriteAsset* getSpriteAsset(SDL_Renderer* renderer, const std::string& assetId);
     void preloadSpriteAssets(SDL_Renderer* renderer, const std::vector<std::string>& assetIds);
 
+    [[nodiscard]] const std::string& getBasePath() const { return m_basePath; }
+
 private:
     std::string m_basePath;
     std::unordered_map<std::string, std::unique_ptr<SpriteAsset>> m_spriteAssetCache;

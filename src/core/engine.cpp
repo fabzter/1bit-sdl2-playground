@@ -1,7 +1,8 @@
 #include "engine.hpp"
 #include <iostream>
 #include "scene.hpp"
-#include "../scenes/game_scene.hpp" // Include our concrete scene
+#include "../scenes/game_scene.hpp"
+#include "../util/input_config_loader.hpp"
 
 Engine::Engine() = default;
 Engine::~Engine() {
@@ -52,7 +53,13 @@ bool Engine::init() {
     // Initialize managers and systems
     m_resourceManager = std::make_unique<ResourceManager>();
     m_inputManager = std::make_unique<InputManager>();
-    setupDefaultInputs();
+
+    // load input config
+    std::string inputFilePath = m_resourceManager->getBasePath() + "res/config/input.ini";
+    if (!InputConfigLoader::loadFromFile(*m_inputManager, inputFilePath)) {
+        std::cerr << "Warning: Could not load input.ini. Falling back to default hardcoded inputs." << std::endl;
+        setupDefaultInputs();
+    }
 
     // SceneManager is created last as it may depend on the others for its scenes.
     m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(),
