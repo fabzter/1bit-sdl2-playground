@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include "input_manager.hpp"
+#include "scene_context.hpp"
 
 class ResourceManager; // Forward declaration
 
@@ -11,8 +12,11 @@ public:
 
     // Called when the scene is first set as active.
     // Use this to load assets, create entities, etc.
-    virtual void load(SDL_Renderer* renderer, ResourceManager* resourceManager,
-         InputManager* inputManager) = 0;
+    virtual void load(SDL_Renderer* renderer, ResourceManager* resourceManager, InputManager* inputManager,
+        const SceneContext& context) = 0;
+
+    // A method for saving state before the scene is unloaded
+    virtual SceneContext saveState() { return {}; } // Default implementation returns an empty context
 
     // Called when the scene is being deactivated.
     // Use this to clean up resources specific to this scene.

@@ -21,15 +21,19 @@ void SceneManager::switchTo(const std::string& id) {
         return;
     }
 
+    // create a context before transition
+    SceneContext context;
+
     // Unload the previous scene if it exists
     if (m_currentScene) {
+        context = m_currentScene->saveState(); // Save the current scene's state
         m_currentScene->unload();
     }
 
     // Create and load the new scene using its factory
     m_currentScene = it->second();
     std::cout << "SceneManager: Switching to scene '" << id << "'." << std::endl;
-    m_currentScene->load(m_renderer, m_resourceManager, m_inputManager);
+    m_currentScene->load(m_renderer, m_resourceManager, m_inputManager, context);
 }
 
 void SceneManager::handleEvents(const SDL_Event& event) {

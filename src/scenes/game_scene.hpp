@@ -26,8 +26,10 @@ public:
     );
     ~GameScene() override = default;
 
-    void load(SDL_Renderer* renderer, ResourceManager* resourceManager, InputManager* inputManager) override;
+    void load(SDL_Renderer* renderer, ResourceManager* resourceManager,
+        InputManager* inputManager, const SceneContext& context) override;
     void unload() override;
+    SceneContext saveState() override;
     void handleEvents(const SDL_Event& event) override;
     void update(float deltaTime) override;
     void render(SDL_Renderer* renderer) override;
