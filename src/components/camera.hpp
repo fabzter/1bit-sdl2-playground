@@ -19,7 +19,11 @@ struct CameraComponent {
     // --- Optional Behaviors (to be used later) ---
 
     // If > 0, the camera smoothly follows. If 0, it's a hard lock.
-    float followSpeed = 8.0f;
+    float followSpeed = 12.0f;
+
+    // The camera will not start moving until the target is this many pixels away.
+    // This helps prevent jitter from small, unintentional movements.
+    float deadZoneRadius = 1.0f;
 
     // If set, the camera will not move outside these world coordinates.
     std::optional<SDL_FRect> worldBounds;
