@@ -32,21 +32,19 @@ include_directories(${SDL2_INCLUDE_DIRS})
 # Add our vendor directory to the include paths
 include_directories(src/vendor/entt/single_include)
 
+# --- Automatically find .cpp files ONLY from our source directories ---
+file(GLOB_RECURSE CORE_SOURCES "src/core/*.cpp")
+file(GLOB_RECURSE SCENES_SOURCES "src/scenes/*.cpp")
+file(GLOB_RECURSE SYSTEMS_SOURCES "src/systems/*.cpp")
+file(GLOB_RECURSE UTIL_SOURCES "src/util/*.cpp")
+
 # Define the Executable
+# Combine the sources from our specific directories.
 add_executable(game
-    src/core/main.cpp
-    src/core/engine.cpp
-    src/scenes/game_scene.cpp
-    src/systems/renderer.cpp
-        src/util/sprite_asset_loader.cpp
-    src/util/resource_manager.cpp
-        src/core/scene_manager.cpp
-        src/systems/animation.cpp
-        src/core/input_manager.cpp
-        src/systems/player_intent_system.cpp
-        src/systems/top_down_movement_system.cpp
-        src/util/input_config_loader.cpp
-        src/systems/camera_system.cpp
+    ${CORE_SOURCES}
+    ${SCENES_SOURCES}
+    ${SYSTEMS_SOURCES}
+    ${UTIL_SOURCES}
 )
 
 # Link SDL2 to the Executable
