@@ -30,6 +30,11 @@ std::unordered_map<std::string, SDL_Keycode> keyMap;
 std::unordered_map<std::string, SDL_GameControllerButton> buttonMap;
 std::unordered_map<std::string, SDL_GameControllerAxis> axisMap;
 
+    // Reverse maps for saving
+std::unordered_map<SDL_Keycode, std::string> keyNameMap;
+std::unordered_map<SDL_GameControllerButton, std::string> buttonNameMap;
+std::unordered_map<SDL_GameControllerAxis, std::string> axisNameMap;
+
 void initializeMaps() {
     if (!keyMap.empty()) return; // Already initialized
 
@@ -44,6 +49,11 @@ void initializeMaps() {
     keyMap["SPACE"] = SDLK_SPACE;
     keyMap["UP"] = SDLK_UP; keyMap["DOWN"] = SDLK_DOWN;
     keyMap["LEFT"] = SDLK_LEFT; keyMap["RIGHT"] = SDLK_RIGHT;
+
+    // Populate reverse key map
+    for (const auto& pair : keyMap) {
+        keyNameMap[pair.second] = pair.first;
+    }
 
     // Controller Buttons
     buttonMap["A"] = SDL_CONTROLLER_BUTTON_A;
@@ -62,6 +72,11 @@ void initializeMaps() {
     buttonMap["DPAD_LEFT"] = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
     buttonMap["DPAD_RIGHT"] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
 
+    // populate reverse button map
+    for (const auto& pair : buttonMap) {
+        buttonNameMap[pair.second] = pair.first;
+    }
+
     // Controller Axes
     axisMap["LEFTX"] = SDL_CONTROLLER_AXIS_LEFTX;
     axisMap["LEFTY"] = SDL_CONTROLLER_AXIS_LEFTY;
@@ -69,6 +84,11 @@ void initializeMaps() {
     axisMap["RIGHTY"] = SDL_CONTROLLER_AXIS_RIGHTY;
     axisMap["TRIGGERLEFT"] = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
     axisMap["TRIGGERRIGHT"] = SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
+
+    // populate reverse axis map
+    for (const auto& pair : axisMap) {
+        axisNameMap[pair.second] = pair.first;
+    }
 }
 }
 
@@ -132,4 +152,49 @@ bool InputConfigLoader::loadFromFile(InputManager& inputManager, const std::stri
     }
     std::cout << "InputConfigLoader: Successfully loaded input bindings from " << filepath << std::endl;
     return true;
+}
+
+bool InputConfigLoader::saveToFile(const InputManager& inputManager, const std::string& filepath) {
+    initializeMaps();
+
+    std::ofstream file(filepath);
+    if (!file.is_open()) {
+        std::cerr << "InputConfigLoader: Failed to open file for writing: " << filepath << std::endl;
+        return false;
+    }
+
+    file << "# Custom input bindings, saved by the engine.\n";
+    file << "# Format: <TYPE>.<SDL_NAME> = <ACTION_NAME>\n";
+    file << "# TYPE can be KEY, BUTTON, or AXIS.\n";
+    file << "# SDL_NAME is the name of the key/button from SDL's documentation (case-insensitive).\n\n";
+    file << "[Bindings]\n";
+
+    // Save Keyboard Bindings
+    for (const auto& pair : inputManager.getKeyToActionMap()) {
+        if (auto it = keyNameMap.find(pair.first); it != keyNameMap.end()) {
+            file << "KEY." << it->second << " = " << pair.second << "\n";
+        }
+    }
+
+    // Save Controller Button Bindings
+    for (const auto& pair : inputManager.getButtonToActionMap()) {
+        if (auto it = buttonNameMap.find(pair.first); it != buttonNameMap.end()) {
+            file << "BUTTON." << it->second << " = " << pair.second << "\n";
+        }
+    }
+
+    // Save Controller Axis Bindings
+    for (const auto& pair : inputManager.getAxisToActionMap()) {
+        if (auto it = axisNameMap.find(pair.first); it != axisNameMap.end()) {
+            file << "AXIS." << it->second << " = " << pair.second << "\n";
+        }
+    }
+
+    if (file.good()) {
+        std::cout << "InputConfigLoader: Successfully saved bindings to " << filepath << std::endl;
+        return true;
+    } else {
+        std::cerr << "InputConfigLoader: An error occurred while writing to " << filepath << std::endl;
+        return false;
+    }
 }

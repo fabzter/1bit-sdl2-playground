@@ -19,6 +19,10 @@ public:
     Engine();
     ~Engine();
 
+    void initUserConfigPath();
+
+    void loadInputConfig();
+
     bool init();
     void run(const std::string& initialSceneId);
 
@@ -36,6 +40,7 @@ private:
     void render();
     void mainLoop();
     void setupDefaultInputs();
+    void saveInputBindings();
 
     // --- Member Declaration Order Matters for Destruction! ---
     // The C++ compiler will destruct these in reverse order of declaration.
@@ -51,6 +56,9 @@ private:
 
     // 3. Scene Manager (depends on systems and managers, must be destructed first)
     std::unique_ptr<SceneManager> m_sceneManager;
+
+    // --config variables --
+    std::string m_userConfigPath;
 
     // --- State Variables ---
     bool m_isRunning = false;

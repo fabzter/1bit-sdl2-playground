@@ -47,6 +47,11 @@ public:
     float getAxisValue(const std::string& actionName) const;
     void mapAxisToAction(SDL_GameControllerAxis axis, const std::string& actionName);
 
+    // --- Getters for saving configuration ---
+    [[nodiscard]] const std::unordered_map<SDL_Keycode, std::string>& getKeyToActionMap() const { return m_keyActionMap; }
+    [[nodiscard]] const std::unordered_map<SDL_GameControllerButton, std::string>& getButtonToActionMap() const { return m_buttonActionMap; }
+    [[nodiscard]] const std::unordered_map<SDL_GameControllerAxis, std::string>& getAxisToActionMap() const { return m_axisActionMap; }
+
 private:
     void openController(int deviceIndex);
     void closeController(int instanceId);

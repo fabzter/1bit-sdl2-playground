@@ -6,12 +6,39 @@
 
 Engine::Engine() = default;
 Engine::~Engine() {
+    saveInputBindings();
     m_sceneManager.reset(); // Explicitly reset SceneManager before other managers
     m_inputManager.reset();
     m_resourceManager.reset();
     m_renderer.reset();
     m_window.reset();
     SDL_Quit();
+}
+
+void Engine::initUserConfigPath() {
+    char* prefPath = SDL_GetPrefPath("fabz", "1bit-playground");
+    if (prefPath) {
+        m_userConfigPath = std::string(prefPath) + "input.ini";
+        SDL_free(prefPath);
+    }
+}
+
+void Engine::loadInputConfig() {
+    // 1. Try loading user's custom config first. It's not an error if it doesn't exist.
+    bool loaded = !m_userConfigPath.empty() &&
+                  InputConfigLoader::loadFromFile(*m_inputManager, m_userConfigPath);
+
+    if (!loaded) {
+        // 2. If that fails, try loading the default config from the resources directory.
+        std::string defaultFilePath = m_resourceManager->getBasePath() + "res/config/input.ini";
+        loaded = InputConfigLoader::loadFromFile(*m_inputManager, defaultFilePath);
+    }
+
+    if (!loaded) {
+        // 3. If all file loading fails, use hardcoded defaults as a last resort.
+        std::cerr << "Warning: Could not load any input config file. Falling back to hardcoded defaults." << std::endl;
+        setupDefaultInputs();
+    }
 }
 
 bool Engine::init() {
@@ -54,12 +81,8 @@ bool Engine::init() {
     m_resourceManager = std::make_unique<ResourceManager>();
     m_inputManager = std::make_unique<InputManager>();
 
-    // load input config
-    std::string inputFilePath = m_resourceManager->getBasePath() + "res/config/input.ini";
-    if (!InputConfigLoader::loadFromFile(*m_inputManager, inputFilePath)) {
-        std::cerr << "Warning: Could not load input.ini. Falling back to default hardcoded inputs." << std::endl;
-        setupDefaultInputs();
-    }
+    initUserConfigPath();
+    loadInputConfig();
 
     // SceneManager is created last as it may depend on the others for its scenes.
     m_sceneManager = std::make_unique<SceneManager>(m_renderer.get(),
@@ -68,6 +91,23 @@ bool Engine::init() {
     m_lastFrameTime = SDL_GetPerformanceCounter();
     m_isRunning = true;
     return true;
+}
+
+void Engine::saveInputBindings() {
+    // Don't save if we don't have an input manager.
+    if (!m_inputManager) return;
+
+    char* prefPath = SDL_GetPrefPath("Fabz", "1bit-playground");
+    if (!prefPath) {
+        std::cerr << "Could not save input bindings: unable to find preferences path." << std::endl;
+        return;
+    }
+
+    // SDL_GetPrefPath ensures the directory exists.
+    std::string configFilePath = std::string(prefPath) + "input.ini";
+    SDL_free(prefPath);
+
+    InputConfigLoader::saveToFile(*m_inputManager, configFilePath);
 }
 
 void Engine::run(const std::string& initialSceneId) {

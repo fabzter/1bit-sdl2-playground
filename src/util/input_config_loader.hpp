@@ -18,4 +18,12 @@ public:
      * @return True if loading was successful, false otherwise.
      */
     static bool loadFromFile(InputManager& inputManager, const std::string& filepath);
+
+    /**
+      * @brief Saves the current input bindings from the InputManager to a file.
+      * @param inputManager The InputManager instance containing the bindings to save.
+      * @param filepath The full path to the file where bindings will be saved.
+      * @return True if saving was successful, false otherwise.
+      */
+    static bool saveToFile(const InputManager& inputManager, const std::string& filepath);
 };
