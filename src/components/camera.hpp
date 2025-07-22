@@ -23,8 +23,5 @@ struct CameraComponent {
 
     // The camera will not start moving until the target is this many pixels away.
     // This helps prevent jitter from small, unintentional movements.
-    float deadZoneRadius = 1.0f;
-
-    // If set, the camera will not move outside these world coordinates.
-    std::optional<SDL_FRect> worldBounds;
+    float deadZoneRadius = 2.0f;
 };

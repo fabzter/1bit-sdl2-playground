@@ -2,30 +2,25 @@
 #include "../components/transform.hpp"
 #include "../components/sprite.hpp"
 #include "../components/camera.hpp"
+#include  "../core/context.hpp"
 #include <iostream>
 
 void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
     ResourceManager& resourceManager) {
-    // Get the screen dimensions to center entities if needed
-    int screenW = 0, screenH = 0;
-    SDL_GetRendererOutputSize(renderer, &screenW, &screenH);
+    if (!registry.ctx().contains<ActiveCamera>()) return; // No active camera
 
-    // --- Find the Active Camera ---
-    Vec2f cameraPos = {0.0f, 0.0f};
-    auto cameraView = registry.view<const CameraComponent, const TransformComponent>();
-    for (auto cameraEntity : cameraView) {
-        const auto& cam = cameraView.get<const CameraComponent>(cameraEntity);
-        if (cam.isActive) {
-            const auto& camTransform = cameraView.get<const TransformComponent>(cameraEntity);
-            cameraPos = camTransform.position;
-            break;
-        }
-    }
+    const auto& screen = registry.ctx().get<ScreenDimensions>();
+    // --- get the Active Camera ---
+    const auto cameraEntity = registry.ctx().get<ActiveCamera>().entity;
+    if (!registry.valid(cameraEntity)) return; // Camera was destroyed
+
+    const auto& camTransform = registry.get<const TransformComponent>(cameraEntity);
+    Vec2f cameraPos = camTransform.position;
 
     // The camera's position is its top-left corner in the world.
     // To center the view on the camera's anchor point, we offset by half the screen size.
-    const float cameraOffsetX = cameraPos.x - screenW / 2.0f;
-    const float cameraOffsetY = cameraPos.y - screenH / 2.0f;
+    const float cameraOffsetX = cameraPos.x - screen.w / 2.0f;
+    const float cameraOffsetY = cameraPos.y - screen.h / 2.0f;
 
     // Create a view of all entities that have both a Transform and a Sprite component
     auto view = registry.view<const TransformComponent, const SpriteComponent>();

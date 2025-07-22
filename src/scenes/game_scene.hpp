@@ -48,4 +48,7 @@ private:
     InputManager* m_inputManager = nullptr;
 
     entt::registry m_registry; // The ECS registry for this scene
+
+    void onCameraConstruct(entt::registry& registry, entt::entity entity);
+    void onCameraDestroy(entt::registry& registry, entt::entity entity);
 };

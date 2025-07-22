@@ -6,6 +6,7 @@
 #include "../components/movement.hpp"
 #include "../components/intent.hpp"
 #include "../components/camera.hpp"
+#include "../core/context.hpp"
 #include <iostream>
 #include <vector>
 
@@ -28,14 +29,26 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     m_resourceManager = resourceManager;
     m_inputManager = inputManager;
 
+    // Connect EnTT signals for automatic camera caching
+    m_registry.on_construct<CameraComponent>().connect<&GameScene::onCameraConstruct>(this);
+    m_registry.on_destroy<CameraComponent>().connect<&GameScene::onCameraDestroy>(this);
+
     std::cout << "GameScene loading..." << std::endl;
     std::vector<std::string> assetsToPreload = {
         "player"
         // Any other assets for this scene would go here.
     };
-
     // This is our explicit preload step for the scene!
     m_resourceManager->preloadSpriteAssets(renderer, assetsToPreload);
+
+    // --- Populate registry context
+    // set screen dimensions (could be updated by engine on window resize)
+    int screenW, screenH;
+    SDL_GetRendererOutputSize(renderer, &screenW, &screenH);
+    m_registry.ctx().emplace<ScreenDimensions>(static_cast<float>(screenW), static_cast<float>(screenH));
+    // Set world boundaries for this specific scene
+    //TODO: this is severely hardcoded
+    m_registry.ctx().emplace<WorldBounds>(SDL_FRect{ -320.0f, -180.0f, 1920.0f, 1080.0f });
 
     // --- Create Player Entity ---
     const auto player = m_registry.create();
@@ -45,8 +58,11 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     m_registry.emplace<MovementComponent>(player, 200.0f); //TODO: is this the right place to set player speed?
     m_registry.emplace<IntentComponent>(player);
 
+    // Place the player somewhere inside the world bounds
+    const auto& bounds = m_registry.ctx().get<WorldBounds>().rect;
+    Vec2f startingPosition = { bounds.x + bounds.w / 2.0f, bounds.y + bounds.h / 2.0f };
+
     // example on how to load data from the context
-    Vec2f startingPosition = {0.0f, 0.0f};
     if (const auto it = context.find("startingPosition"); it != context.end()) {
         try {
             startingPosition = std::any_cast<Vec2f>(it->second);
@@ -71,7 +87,12 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     const auto camera = m_registry.create();
     m_registry.emplace<TransformComponent>(camera); // camera needs a positions in the world
     auto& camComponent = m_registry.emplace<CameraComponent>(camera);
-    camComponent.target = player; // tell the camera to follow the player
+    camComponent.target = player; // tell the camera to follow the player. This will trigger onCameraConstruct
+
+    // Immediately set the camera's position to the player's starting position.
+    const auto& playerTransform = m_registry.get<TransformComponent>(player);
+    auto& cameraTransform = m_registry.get<TransformComponent>(camera);
+    cameraTransform.position = playerTransform.position;
 
     std::cout << "GameScene loaded." << std::endl;
 }
@@ -114,4 +135,23 @@ void GameScene::update(float deltaTime) {
 void GameScene::render(SDL_Renderer* renderer) {
     // Note: resource manager is still passed directly here, which is fine.
     m_renderSystem->draw(renderer, m_registry, *m_resourceManager);
+}
+
+// --- Signal Handlers ---
+
+void GameScene::onCameraConstruct(entt::registry& registry, entt::entity entity) {
+    const auto& camera = registry.get<CameraComponent>(entity);
+    if (camera.isActive) {
+        // Set this camera as the active one in the context.
+        // This will overwrite any previous active camera.
+        registry.ctx().emplace<ActiveCamera>(entity);
+    }
+}
+
+void GameScene::onCameraDestroy(entt::registry& registry, entt::entity entity) {
+    // If the camera being destroyed is the active one, remove it from the context.
+    const auto& activeCamera = registry.ctx().get<ActiveCamera>();
+    if (activeCamera.entity == entity) {
+        registry.ctx().erase<ActiveCamera>();
+    }
 }
