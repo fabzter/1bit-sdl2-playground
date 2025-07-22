@@ -13,12 +13,14 @@ int main(int argc, char* argv[]) {
         auto topDownMovementSystem = std::make_unique<TopDownMovementSystem>();
         auto animationSystem = std::make_unique<AnimationSystem>();
         auto renderSystem = std::make_unique<RenderSystem>();
+        auto cameraSystem = std::make_unique<CameraSystem>();
 
         return std::make_unique<GameScene>(
             std::move(playerIntentSystem),
             std::move(topDownMovementSystem),
             std::move(animationSystem),
-            std::move(renderSystem)
+            std::move(renderSystem),
+            std::move(cameraSystem)
         );
     });
 

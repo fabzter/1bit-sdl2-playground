@@ -5,6 +5,7 @@
 #include "../components/player_control.hpp"
 #include "../components/movement.hpp"
 #include "../components/intent.hpp"
+#include "../components/camera.hpp"
 #include <iostream>
 #include <vector>
 
@@ -12,11 +13,13 @@ GameScene::GameScene(
     std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
     std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
     std::unique_ptr<AnimationSystem> animationSystem,
-    std::unique_ptr<RenderSystem> renderSystem)
+    std::unique_ptr<RenderSystem> renderSystem,
+    std::unique_ptr<CameraSystem> cameraSystem)
     : m_playerIntentSystem(std::move(playerIntentSystem)),
       m_topDownMovementSystem(std::move(topDownMovementSystem)),
       m_animationSystem(std::move(animationSystem)),
-      m_renderSystem(std::move(renderSystem))
+      m_renderSystem(std::move(renderSystem)),
+      m_cameraSystem(std::move(cameraSystem))
 
 {}
 
@@ -64,6 +67,12 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     }
     // --- End Player Entity ---
 
+    // --- Create Camera Entity ---
+    const auto camera = m_registry.create();
+    m_registry.emplace<TransformComponent>(camera); // camera needs a positions in the world
+    auto& camComponent = m_registry.emplace<CameraComponent>(camera);
+    camComponent.target = player; // tell the camera to follow the player
+
     std::cout << "GameScene loaded." << std::endl;
 }
 
@@ -95,6 +104,7 @@ void GameScene::handleEvents(const SDL_Event& event) {
 
 void GameScene::update(float deltaTime) {
     // Update systems in logical order
+    m_cameraSystem->update(m_registry, deltaTime);
     m_playerIntentSystem->update(m_registry, *m_inputManager, deltaTime); // 1. Populate intent
     m_topDownMovementSystem->update(m_registry, deltaTime); // 2. Apply movement from intent
 

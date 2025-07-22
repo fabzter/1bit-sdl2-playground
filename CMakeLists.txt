@@ -46,6 +46,7 @@ add_executable(game
         src/systems/player_intent_system.cpp
         src/systems/top_down_movement_system.cpp
         src/util/input_config_loader.cpp
+        src/systems/camera_system.cpp
 )
 
 # Link SDL2 to the Executable

@@ -6,12 +6,14 @@
 #include "../systems/animation.hpp"
 #include "../systems/player_intent_system.hpp"
 #include "../systems/top_down_movement_system.hpp"
+#include "../systems/camera_system.hpp"
 
 // Forward-declare systems and managers
 class RenderSystem;
 class AnimationSystem;
 class PlayerIntentSystem;
 class TopDownMovementSystem;
+class CameraSystem;
 
 class ResourceManager;
 class InputManager;
@@ -22,7 +24,8 @@ public:
         std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
         std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
         std::unique_ptr<AnimationSystem> animationSystem,
-        std::unique_ptr<RenderSystem> renderSystem
+        std::unique_ptr<RenderSystem> renderSystem,
+        std::unique_ptr<CameraSystem> cameraSystem
     );
     ~GameScene() override = default;
 
@@ -39,6 +42,7 @@ private:
     std::unique_ptr<AnimationSystem> m_animationSystem;
     std::unique_ptr<PlayerIntentSystem> m_playerIntentSystem;
     std::unique_ptr<TopDownMovementSystem> m_topDownMovementSystem;
+    std::unique_ptr<CameraSystem> m_cameraSystem;
 
     ResourceManager* m_resourceManager = nullptr;
     InputManager* m_inputManager = nullptr;

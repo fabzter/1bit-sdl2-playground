@@ -1,6 +1,7 @@
 #include "renderer.hpp"
 #include "../components/transform.hpp"
 #include "../components/sprite.hpp"
+#include "../components/camera.hpp"
 #include <iostream>
 
 void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
@@ -8,6 +9,23 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
     // Get the screen dimensions to center entities if needed
     int screenW = 0, screenH = 0;
     SDL_GetRendererOutputSize(renderer, &screenW, &screenH);
+
+    // --- Find the Active Camera ---
+    Vec2f cameraPos = {0.0f, 0.0f};
+    auto cameraView = registry.view<const CameraComponent, const TransformComponent>();
+    for (auto cameraEntity : cameraView) {
+        const auto& cam = cameraView.get<const CameraComponent>(cameraEntity);
+        if (cam.isActive) {
+            const auto& camTransform = cameraView.get<const TransformComponent>(cameraEntity);
+            cameraPos = camTransform.position;
+            break;
+        }
+    }
+
+    // The camera's position is its top-left corner in the world.
+    // To center the view on the camera's anchor point, we offset by half the screen size.
+    const float cameraOffsetX = cameraPos.x - screenW / 2.0f;
+    const float cameraOffsetY = cameraPos.y - screenH / 2.0f;
 
     // Create a view of all entities that have both a Transform and a Sprite component
     auto view = registry.view<const TransformComponent, const SpriteComponent>();
@@ -54,8 +72,8 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
 
         // Use component data to define where and how to draw the sprite
         const SDL_FRect destRect = {
-            transform.position.x + (screenW - sprite.width * transform.scale.x) / 2.0f,
-            transform.position.y + (screenH - sprite.height * transform.scale.y) / 2.0f,
+            transform.position.x - cameraOffsetX, // Apply camera offset
+            transform.position.y - cameraOffsetY, // Apply camera offset
             static_cast<float>(sprite.width) * transform.scale.x,
             static_cast<float>(sprite.height) * transform.scale.y
         };
