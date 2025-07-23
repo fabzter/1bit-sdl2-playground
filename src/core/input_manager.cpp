@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cmath>
 
-InputManager::InputManager() {
+InputManager::InputManager(int joystickDeadZone) : m_joystickDeadZone(joystickDeadZone) {
     if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0) {
         std::cerr << "Failed to initialize SDL GameController subsystem: " << SDL_GetError() << std::endl;
     }
@@ -55,17 +55,21 @@ void InputManager::handleEvent(const SDL_Event& event) {
             break;
         }
 
-            // --- Controller Axes (Axis Actions) --- (NEW)
+            // --- Controller Axes (Axis Actions) ---
         case SDL_CONTROLLERAXISMOTION: {
             auto it = m_axisActionMap.find(static_cast<SDL_GameControllerAxis>(event.caxis.axis));
             if (it != m_axisActionMap.end()) {
                 actionName = it->second;
-                float rawValue = event.caxis.value;
+                const float rawValue = event.caxis.value;
 
-                // Apply dead zone and normalize the value from -32768->32767 to -1.0->1.0
+                // Apply dead zone
                 if (std::abs(rawValue) > m_joystickDeadZone) {
-                    //TODO: check if it is ok that this normalization value is hardcoded
-                    m_axisActions[actionName].value = rawValue / 32767.0f;
+                    // Use robust normalization based on Godot's method
+                    if (rawValue > 0) {
+                        m_axisActions[actionName].value = static_cast<float>(rawValue) / SDL_JOYSTICK_AXIS_MAX;
+                    } else {
+                        m_axisActions[actionName].value = static_cast<float>(rawValue) / -SDL_JOYSTICK_AXIS_MIN;
+                    }
                 } else {
                     m_axisActions[actionName].value = 0.0f;
                 }

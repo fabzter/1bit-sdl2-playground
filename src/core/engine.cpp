@@ -79,7 +79,7 @@ bool Engine::init() {
 
     // Initialize managers and systems
     m_resourceManager = std::make_unique<ResourceManager>();
-    m_inputManager = std::make_unique<InputManager>();
+    m_inputManager = std::make_unique<InputManager>(8000);
 
     initUserConfigPath();
     loadInputConfig();

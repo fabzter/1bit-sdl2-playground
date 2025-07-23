@@ -25,7 +25,7 @@ struct AxisAction {
 
 class InputManager {
 public:
-    InputManager();
+    InputManager(int joystickDeadZone = 8000);
     ~InputManager();
 
     // Called once per frame, before polling events, to update states.
@@ -69,6 +69,6 @@ private:
     // Manages connected controllers.
     std::vector<SDL_GameController*> m_controllers;
     // for handling drift
-    //TODO: it must be a configurable value
-    const int m_joystickDeadZone = 8000;
+
+    float m_joystickDeadZone;
 };
