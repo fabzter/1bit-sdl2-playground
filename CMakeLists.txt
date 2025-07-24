@@ -45,6 +45,10 @@ add_executable(game
     ${SCENES_SOURCES}
     ${SYSTEMS_SOURCES}
     ${UTIL_SOURCES}
+        src/components/blackboard.hpp
+        src/core/blackboard_keys.hpp
+        src/systems/animation_state_system.cpp
+        src/systems/animation_state_system.hpp
 )
 
 # Link SDL2 to the Executable

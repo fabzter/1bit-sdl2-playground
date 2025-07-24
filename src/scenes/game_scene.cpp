@@ -6,6 +6,8 @@
 #include "../components/movement.hpp"
 #include "../components/intent.hpp"
 #include "../components/camera.hpp"
+#include "../components/blackboard.hpp"
+#include "../core/blackboard_keys.hpp"
 #include "../core/context.hpp"
 #include <iostream>
 #include <vector>
@@ -13,11 +15,13 @@
 GameScene::GameScene(
     std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
     std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
+    std::unique_ptr<AnimationStateSystem> animationStateSystem,
     std::unique_ptr<AnimationSystem> animationSystem,
     std::unique_ptr<RenderSystem> renderSystem,
     std::unique_ptr<CameraSystem> cameraSystem)
     : m_playerIntentSystem(std::move(playerIntentSystem)),
       m_topDownMovementSystem(std::move(topDownMovementSystem)),
+      m_animationStateSystem(std::move(animationStateSystem)),
       m_animationSystem(std::move(animationSystem)),
       m_renderSystem(std::move(renderSystem)),
       m_cameraSystem(std::move(cameraSystem))
@@ -57,6 +61,7 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     // Add the new MovementComponent with a starting speed
     m_registry.emplace<MovementComponent>(player, 200.0f); //TODO: is this the right place to set player speed?
     m_registry.emplace<IntentComponent>(player);
+    m_registry.emplace<BlackboardComponent>(player);
 
     // Place the player somewhere inside the world bounds
     const auto& bounds = m_registry.ctx().get<WorldBounds>().rect;
@@ -86,13 +91,24 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     // --- Create Camera Entity ---
     const auto camera = m_registry.create();
     m_registry.emplace<TransformComponent>(camera); // camera needs a positions in the world
-    auto& camComponent = m_registry.emplace<CameraComponent>(camera);
-    camComponent.target = player; // tell the camera to follow the player. This will trigger onCameraConstruct
+    m_registry.emplace<CameraComponent>(camera); // Just the tag
+
+    // --- Configure camera via its new blackboard ---
+    auto& cameraBlackboard = m_registry.emplace<BlackboardComponent>(camera);
+    cameraBlackboard.values[BlackboardKeys::Camera::Target] = player;
+    cameraBlackboard.values[BlackboardKeys::Camera::FollowSpeed] = 12.0f;
+    cameraBlackboard.values[BlackboardKeys::Camera::DeadZoneRadius] = 2.0f;
 
     // Immediately set the camera's position to the player's starting position.
     const auto& playerTransform = m_registry.get<TransformComponent>(player);
     auto& cameraTransform = m_registry.get<TransformComponent>(camera);
     cameraTransform.position = playerTransform.position;
+
+    // --- Signal Handlers ---
+    // This is tricky. When we set the active camera via onCameraConstruct
+    // it's not guaranteed that its Blackboard has been created yet.
+    // For now, let's manually set the active camera after creation.
+    m_registry.ctx().emplace<ActiveCamera>(camera);
 
     std::cout << "GameScene loaded." << std::endl;
 }
@@ -128,7 +144,7 @@ void GameScene::update(float deltaTime) {
     m_cameraSystem->update(m_registry, deltaTime);
     m_playerIntentSystem->update(m_registry, *m_inputManager, deltaTime); // 1. Populate intent
     m_topDownMovementSystem->update(m_registry, deltaTime); // 2. Apply movement from intent
-
+    m_animationStateSystem->update(m_registry);
     m_animationSystem->update(m_registry, deltaTime, *m_resourceManager);
 }
 
@@ -140,12 +156,6 @@ void GameScene::render(SDL_Renderer* renderer) {
 // --- Signal Handlers ---
 
 void GameScene::onCameraConstruct(entt::registry& registry, entt::entity entity) {
-    const auto& camera = registry.get<CameraComponent>(entity);
-    if (camera.isActive) {
-        // Set this camera as the active one in the context.
-        // This will overwrite any previous active camera.
-        registry.ctx().emplace<ActiveCamera>(entity);
-    }
 }
 
 void GameScene::onCameraDestroy(entt::registry& registry, entt::entity entity) {
