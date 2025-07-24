@@ -151,9 +151,12 @@ void TomlSceneLoader::parseTransform(entt::registry& registry, entt::entity enti
 void TomlSceneLoader::parseSprite(entt::registry& registry, entt::entity entity, const toml::table& data) {
     auto assetId = data["assetId"].value_or<std::string>("");
     auto isAnimated = data["isAnimated"].value_or(false);
-    auto zIndex = data["zIndex"].value_or(0);
+
+    auto sortingLayer = data["sortingLayer"].value_or<int16_t>(0);
+    auto orderInLayer = data["orderInLayer"].value_or<int16_t>(0);
+
     // Note: Sprite width/height will be set from the asset later.
-    auto& sprite = registry.emplace<SpriteComponent>(entity, assetId, 0, 0, zIndex);
+    auto& sprite = registry.emplace<SpriteComponent>(entity, assetId, 0, 0, sortingLayer, orderInLayer);
     sprite.isAnimated = isAnimated;
 }
 

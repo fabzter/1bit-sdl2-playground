@@ -4,32 +4,59 @@
 #include "../components/camera.hpp"
 #include  "../core/context.hpp"
 #include <iostream>
+#include <vector>
+#include <algorithm>
+
+namespace {
+    // A simple struct to hold an entity and its calculated sort key.
+    struct Renderable {
+        entt::entity entity;
+        int32_t sortKey;
+
+        // Overload the less-than operator to allow direct sorting.
+        bool operator<(const Renderable& other) const {
+            return sortKey < other.sortKey;
+        }
+    };
+}
 
 void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
     ResourceManager& resourceManager) {
     if (!registry.ctx().contains<ActiveCamera>()) return; // No active camera
-
-    const auto& screen = registry.ctx().get<ScreenDimensions>();
     // --- get the Active Camera ---
     const auto cameraEntity = registry.ctx().get<ActiveCamera>().entity;
     if (!registry.valid(cameraEntity)) return; // Camera was destroyed
 
+    // --- Camera calculation ---
+    const auto& screen = registry.ctx().get<ScreenDimensions>();
     const auto& camTransform = registry.get<const TransformComponent>(cameraEntity);
     Vec2f cameraPos = camTransform.position;
-
     // The camera's position is its top-left corner in the world.
     // To center the view on the camera's anchor point, we offset by half the screen size.
     const float cameraOffsetX = cameraPos.x - screen.w / 2.0f;
     const float cameraOffsetY = cameraPos.y - screen.h / 2.0f;
 
-    // Create a view of all entities that have both a Transform and a Sprite component
+    // --- COLLECT ---
+    // Create the render queue for this frame.
+    std::vector<Renderable> renderQueue;
     auto view = registry.view<const TransformComponent, const SpriteComponent>();
-
-    // Iterate over each entity in the view
+    renderQueue.reserve(view.size_hint()); // Pre-allocate memory
     for (const auto entity : view) {
-        // Get the components from the entity
-        const auto& transform = view.get<const TransformComponent>(entity);
         const auto& sprite = view.get<const SpriteComponent>(entity);
+        renderQueue.emplace_back(Renderable{entity, sprite.getSortKey()});
+    }
+
+    // --- SORT ---
+    // Sort the queue. Thanks to the operator< overload, it's a one-liner.
+    // TODO: explore options to avoid sorting on every call
+    std::sort(renderQueue.begin(), renderQueue.end());
+
+    // --- DRAW ---
+    // Iterate over each entity in the view
+    for (const auto renderable : renderQueue) {
+        // Get the components from the renderable's entity
+        const auto& transform = registry.get<const TransformComponent>(renderable.entity);
+        const auto& sprite = registry.get<const SpriteComponent>(renderable.entity);
 
         const SpriteAsset* asset = resourceManager.getSpriteAsset(sprite.assetId);
         if (!asset) {
@@ -75,7 +102,6 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
 
         SDL_SetTextureColorMod(texture, sprite.color.r, sprite.color.g, sprite.color.b);
         SDL_SetTextureAlphaMod(texture, sprite.color.a);
-
         SDL_RenderCopyF(renderer, texture, &srcRect, &destRect);
     }
 }
