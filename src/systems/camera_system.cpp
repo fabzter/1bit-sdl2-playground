@@ -43,7 +43,6 @@ void CameraSystem::update(entt::registry& registry, float deltaTime) {
     const float dx = targetTransform.position.x - cameraTransform.position.x;
     const float dy = targetTransform.position.y - cameraTransform.position.y;
     const float distance = std::sqrt(dx * dx + dy * dy);
-
     // if the target is within the dead zone, do not move the camera
     if (distance <= deadZoneRadius) {
         return;

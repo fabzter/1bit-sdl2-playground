@@ -33,10 +33,6 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     m_resourceManager = resourceManager;
     m_inputManager = inputManager;
 
-    // Connect EnTT signals for automatic camera caching
-    m_registry.on_construct<CameraComponent>().connect<&GameScene::onCameraConstruct>(this);
-    m_registry.on_destroy<CameraComponent>().connect<&GameScene::onCameraDestroy>(this);
-
     std::cout << "GameScene loading..." << std::endl;
     std::vector<std::string> assetsToPreload = {
         "player"
@@ -104,10 +100,7 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     auto& cameraTransform = m_registry.get<TransformComponent>(camera);
     cameraTransform.position = playerTransform.position;
 
-    // --- Signal Handlers ---
-    // This is tricky. When we set the active camera via onCameraConstruct
-    // it's not guaranteed that its Blackboard has been created yet.
-    // For now, let's manually set the active camera after creation.
+    // Set the active camera in the context directly
     m_registry.ctx().emplace<ActiveCamera>(camera);
 
     std::cout << "GameScene loaded." << std::endl;
@@ -151,17 +144,4 @@ void GameScene::update(float deltaTime) {
 void GameScene::render(SDL_Renderer* renderer) {
     // Note: resource manager is still passed directly here, which is fine.
     m_renderSystem->draw(renderer, m_registry, *m_resourceManager);
-}
-
-// --- Signal Handlers ---
-
-void GameScene::onCameraConstruct(entt::registry& registry, entt::entity entity) {
-}
-
-void GameScene::onCameraDestroy(entt::registry& registry, entt::entity entity) {
-    // If the camera being destroyed is the active one, remove it from the context.
-    const auto& activeCamera = registry.ctx().get<ActiveCamera>();
-    if (activeCamera.entity == entity) {
-        registry.ctx().erase<ActiveCamera>();
-    }
 }

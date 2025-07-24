@@ -9,25 +9,17 @@ int main(int argc, char* argv[]) {
 
     // The user now define the "recipe" for their scenes.
     engine.registerSceneFactory("Level1", []() {
-        auto playerIntentSystem = std::make_unique<PlayerIntentSystem>();
-        auto topDownMovementSystem = std::make_unique<TopDownMovementSystem>();
-        auto animationStateSystem = std::make_unique<AnimationStateSystem>();
-        auto animationSystem = std::make_unique<AnimationSystem>();
-        auto renderSystem = std::make_unique<RenderSystem>();
-        auto cameraSystem = std::make_unique<CameraSystem>();
-
         return std::make_unique<GameScene>(
-            std::move(playerIntentSystem),
-            std::move(topDownMovementSystem),
-            std::move(animationStateSystem),
-            std::move(animationSystem),
-            std::move(renderSystem),
-            std::move(cameraSystem)
+            std::make_unique<PlayerIntentSystem>(),
+            std::make_unique<TopDownMovementSystem>(),
+            std::make_unique<AnimationStateSystem>(),
+            std::make_unique<AnimationSystem>(),
+            std::make_unique<RenderSystem>(),
+            std::make_unique<CameraSystem>()
         );
     });
 
     // The user tells the engine which scene to start with.
     engine.run("Level1");
-
     return 0;
 }
