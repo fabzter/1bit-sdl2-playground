@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
+#include <SDL2/SDL.h>
 #include "../util/resource_manager.hpp"
 
 class AnimationSystem {
@@ -13,5 +14,7 @@ public:
      * @param deltaTime The time elapsed since the last frame.
      * @param resourceManager The resource manager to fetch sprite assets.
      */
-    void update(entt::registry& registry, float deltaTime, ResourceManager& resourceManager);
+    void update(entt::registry& registry,
+        float deltaTime,
+        ResourceManager& resourceManager);
 };

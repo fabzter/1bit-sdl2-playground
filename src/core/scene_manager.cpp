@@ -9,14 +9,14 @@ SceneManager::~SceneManager() {
     shutdown();
 }
 
-void SceneManager::registerScene(const std::string& id, std::function<std::unique_ptr<Scene>()> factory) {
-    m_sceneFactories[id] = std::move(factory);
+void SceneManager::registerScene(const std::string& id, std::unique_ptr<Scene> scene) {
+    m_scenes[id] = std::move(scene);
     std::cout << "SceneManager: Registered scene with ID '" << id << "'." << std::endl;
 }
 
 void SceneManager::switchTo(const std::string& id) {
-    auto it = m_sceneFactories.find(id);
-    if (it == m_sceneFactories.end()) {
+    auto it = m_scenes.find(id);
+    if (it == m_scenes.end()) {
         std::cerr << "SceneManager: No scene registered with ID '" << id << "'." << std::endl;
         return;
     }
@@ -25,38 +25,37 @@ void SceneManager::switchTo(const std::string& id) {
     SceneContext context;
 
     // Unload the previous scene if it exists
-    if (m_currentScene) {
-        context = m_currentScene->saveState(); // Save the current scene's state
-        m_currentScene->unload();
+    if (!m_currentSceneId.empty() && m_scenes.count(m_currentSceneId)) {
+        m_scenes[m_currentSceneId]->unload();
     }
 
-    // Create and load the new scene using its factory
-    m_currentScene = it->second();
+    // Load the new scene
+    m_currentSceneId = id;
     std::cout << "SceneManager: Switching to scene '" << id << "'." << std::endl;
-    m_currentScene->load(m_renderer, m_resourceManager, m_inputManager, context);
+    m_scenes[id]->load(m_renderer, m_resourceManager, m_inputManager, context);
 }
 
 void SceneManager::handleEvents(const SDL_Event& event) {
-    if (m_currentScene) {
-        m_currentScene->handleEvents(event);
+    if (!m_currentSceneId.empty()) {
+        m_scenes[m_currentSceneId]->handleEvents(event);
     }
 }
 
 void SceneManager::update(float deltaTime) {
-    if (m_currentScene) {
-        m_currentScene->update(deltaTime);
+    if (!m_currentSceneId.empty()) {
+        m_scenes[m_currentSceneId]->update(deltaTime);
     }
 }
 
 void SceneManager::render() {
-    if (m_currentScene) {
-        m_currentScene->render(m_renderer);
+    if (!m_currentSceneId.empty()) {
+        m_scenes[m_currentSceneId]->render(m_renderer);
     }
 }
 
 void SceneManager::shutdown() {
-    if (m_currentScene) {
-        m_currentScene->unload();
-        m_currentScene.reset();
+    if (!m_currentSceneId.empty() && m_scenes.count(m_currentSceneId)) {
+        m_scenes[m_currentSceneId]->unload();
     }
+    m_scenes.clear();
 }

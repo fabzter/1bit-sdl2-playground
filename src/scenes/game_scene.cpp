@@ -13,18 +13,22 @@
 #include <vector>
 
 GameScene::GameScene(
+    std::unique_ptr<ISceneLoader> sceneLoader,
+    const std::string& sceneFilePath,
     std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
     std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
     std::unique_ptr<AnimationStateSystem> animationStateSystem,
     std::unique_ptr<AnimationSystem> animationSystem,
     std::unique_ptr<RenderSystem> renderSystem,
     std::unique_ptr<CameraSystem> cameraSystem)
-    : m_playerIntentSystem(std::move(playerIntentSystem)),
-      m_topDownMovementSystem(std::move(topDownMovementSystem)),
-      m_animationStateSystem(std::move(animationStateSystem)),
-      m_animationSystem(std::move(animationSystem)),
-      m_renderSystem(std::move(renderSystem)),
-      m_cameraSystem(std::move(cameraSystem))
+:  m_sceneLoader(std::move(sceneLoader)),
+m_sceneFilePath(sceneFilePath),
+m_playerIntentSystem(std::move(playerIntentSystem)),
+m_topDownMovementSystem(std::move(topDownMovementSystem)),
+m_animationStateSystem(std::move(animationStateSystem)),
+m_animationSystem(std::move(animationSystem)),
+m_renderSystem(std::move(renderSystem)),
+m_cameraSystem(std::move(cameraSystem))
 
 {}
 
@@ -34,74 +38,8 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     m_inputManager = inputManager;
 
     std::cout << "GameScene loading..." << std::endl;
-    std::vector<std::string> assetsToPreload = {
-        "player"
-        // Any other assets for this scene would go here.
-    };
-    // This is our explicit preload step for the scene!
-    m_resourceManager->preloadSpriteAssets(renderer, assetsToPreload);
-
-    // --- Populate registry context
-    // set screen dimensions (could be updated by engine on window resize)
-    int screenW, screenH;
-    SDL_GetRendererOutputSize(renderer, &screenW, &screenH);
-    m_registry.ctx().emplace<ScreenDimensions>(static_cast<float>(screenW), static_cast<float>(screenH));
-    // Set world boundaries for this specific scene
-    //TODO: this is severely hardcoded
-    m_registry.ctx().emplace<WorldBounds>(SDL_FRect{ -320.0f, -180.0f, 1920.0f, 1080.0f });
-
-    // --- Create Player Entity ---
-    const auto player = m_registry.create();
-    // tag player as controllable
-    m_registry.emplace<PlayerControlComponent>(player);
-    // Add the new MovementComponent with a starting speed
-    m_registry.emplace<MovementComponent>(player, 200.0f); //TODO: is this the right place to set player speed?
-    m_registry.emplace<IntentComponent>(player);
-    m_registry.emplace<BlackboardComponent>(player);
-
-    // Place the player somewhere inside the world bounds
-    const auto& bounds = m_registry.ctx().get<WorldBounds>().rect;
-    Vec2f startingPosition = { bounds.x + bounds.w / 2.0f, bounds.y + bounds.h / 2.0f };
-
-    // example on how to load data from the context
-    if (const auto it = context.find("startingPosition"); it != context.end()) {
-        try {
-            startingPosition = std::any_cast<Vec2f>(it->second);
-            std::cout << "Loaded player position from context: " << startingPosition.x << ", " <<
-                startingPosition.y << std::endl;
-        } catch (const std::bad_any_cast& e) {
-            std::cerr << "Failed to cast player_position: " << e.what() << std::endl;
-        }
-    }
-
-    // 1. Get the loaded sprite asset from the resource manager
-    const SpriteAsset* playerAsset = m_resourceManager->getSpriteAsset(renderer, "player");
-    if (playerAsset) {
-        // 2. Use the asset's data to construct our components
-        m_registry.emplace<TransformComponent>(player, startingPosition, Vec2f{2.0f, 2.0f});
-        auto& sprite = m_registry.emplace<SpriteComponent>(player, playerAsset->assetId, playerAsset->width, playerAsset->height);
-        sprite.isAnimated = true; //TODO: probably should activate automatically depending on sprite data
-    }
-    // --- End Player Entity ---
-
-    // --- Create Camera Entity ---
-    const auto camera = m_registry.create();
-    m_registry.emplace<TransformComponent>(camera); // camera needs a positions in the world
-    m_registry.emplace<CameraComponent>(camera); // Just the tag
-
-    // --- Configure camera via its new blackboard ---
-    auto& cameraBlackboard = m_registry.emplace<BlackboardComponent>(camera);
-    cameraBlackboard.values[BlackboardKeys::Camera::Target] = player;
-    cameraBlackboard.values[BlackboardKeys::Camera::FollowSpeed] = 12.0f;
-    cameraBlackboard.values[BlackboardKeys::Camera::DeadZoneRadius] = 2.0f;
-
-    // Immediately set the camera's position to the player's starting position.
-    const auto& playerTransform = m_registry.get<TransformComponent>(player);
-    auto& cameraTransform = m_registry.get<TransformComponent>(camera);
-    cameraTransform.position = playerTransform.position;
-
-    // Set the active camera in the context directly
-    m_registry.ctx().emplace<ActiveCamera>(camera);
+    // Use the loader to populate the registry!
+    m_sceneLoader->load(m_registry, renderer, m_resourceManager, m_sceneFilePath);
 
     std::cout << "GameScene loaded." << std::endl;
 }
@@ -138,7 +76,7 @@ void GameScene::update(float deltaTime) {
     m_playerIntentSystem->update(m_registry, *m_inputManager, deltaTime); // 1. Populate intent
     m_topDownMovementSystem->update(m_registry, deltaTime); // 2. Apply movement from intent
     m_animationStateSystem->update(m_registry);
-    m_animationSystem->update(m_registry, deltaTime, *m_resourceManager);
+    m_animationSystem->update(m_registry,  deltaTime, *m_resourceManager);
 }
 
 void GameScene::render(SDL_Renderer* renderer) {

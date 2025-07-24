@@ -19,8 +19,18 @@ public:
     ResourceManager(const ResourceManager&) = delete;
     ResourceManager& operator=(const ResourceManager&) = delete;
 
-    const SpriteAsset* getSpriteAsset(SDL_Renderer* renderer, const std::string& assetId);
-    void preloadSpriteAssets(SDL_Renderer* renderer, const std::vector<std::string>& assetIds);
+    /**
+     * @brief Loads an asset from file or gets it from the cache if already loaded.
+     * @attention THIS SHOULD ONLY BE CALLED DURING A LOADING PHASE.
+     */
+    const SpriteAsset* loadSpriteAsset(SDL_Renderer* renderer, const std::string& assetId);
+
+    /**
+     * @brief Gets a pre-loaded asset from the cache. Does not load from file.
+     * @attention THIS IS THE SAFE METHOD TO CALL DURING THE GAME LOOP (UPDATE/RENDER).
+     * It is marked 'const' because it does not modify the resource manager's state.
+     */
+    const SpriteAsset* getSpriteAsset(const std::string& assetId) const;
 
     [[nodiscard]] const std::string& getBasePath() const { return m_basePath; }
 

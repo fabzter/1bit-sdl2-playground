@@ -19,12 +19,12 @@ public:
     SceneManager& operator=(const SceneManager&) = delete;
 
     /**
-     * @brief Registers a scene factory with a unique ID.
+     * @brief Registers a scene with a unique ID.
      * The factory is a function that returns a new instance of a scene.
      * @param id The unique string identifier for the scene (e.g., "game", "menu").
-     * @param factory The lambda or function that creates the scene.
+     * @param scene the scene to register
      */
-    void registerScene(const std::string& id, std::function<std::unique_ptr<Scene>()> factory);
+    void registerScene(const std::string& id, std::unique_ptr<Scene> scene);
 
     /**
      * @brief Unloads the current scene and loads/switches to a new one.
@@ -48,6 +48,6 @@ private:
     ResourceManager* m_resourceManager;
     InputManager* m_inputManager;
 
-    std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> m_sceneFactories;
-    std::unique_ptr<Scene> m_currentScene;
+    std::unordered_map<std::string, std::unique_ptr<Scene>> m_scenes;
+    std::string m_currentSceneId;
 };

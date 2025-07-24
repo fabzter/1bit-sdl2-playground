@@ -2,7 +2,9 @@
 #include "../components/sprite.hpp"
 #include <iostream>
 
-void AnimationSystem::update(entt::registry& registry, float deltaTime, ResourceManager& resourceManager) {
+void AnimationSystem::update(entt::registry& registry,
+    float deltaTime,
+    ResourceManager& resourceManager) {
     auto view = registry.view<SpriteComponent>();
 
     for (const auto entity : view) {
@@ -14,7 +16,7 @@ void AnimationSystem::update(entt::registry& registry, float deltaTime, Resource
         }
 
         // The renderer is not needed for animation logic, so we can pass nullptr.
-        const SpriteAsset* asset = resourceManager.getSpriteAsset(nullptr, sprite.assetId);
+        const SpriteAsset* asset = resourceManager.getSpriteAsset(sprite.assetId);
         if (!asset) {
             continue;
         }

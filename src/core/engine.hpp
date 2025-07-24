@@ -31,8 +31,8 @@ public:
     ResourceManager* getResourceManager() { return m_resourceManager.get(); }
     SceneManager* getSceneManager() { return m_sceneManager.get(); }
 
-    // This allows the user to add their own scene factories
-    void registerSceneFactory(const std::string& id, std::function<std::unique_ptr<Scene>()> factory);
+    // This allows the user to add their own scenes
+    void registerScene(const std::string& id, std::unique_ptr<Scene> scene);
 
 private:
     void handleEvents();

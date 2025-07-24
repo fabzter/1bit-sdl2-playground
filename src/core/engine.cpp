@@ -123,8 +123,8 @@ void Engine::mainLoop() {
     }
 }
 
-void Engine::registerSceneFactory(const std::string& id, std::function<std::unique_ptr<Scene>()> factory) {
-    m_sceneManager->registerScene(id, std::move(factory));
+void Engine::registerScene(const std::string& id, std::unique_ptr<Scene> scene) {
+    m_sceneManager->registerScene(id, std::move(scene));
 }
 
 void Engine::handleEvents() {

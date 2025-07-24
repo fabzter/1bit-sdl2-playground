@@ -31,7 +31,7 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
         const auto& transform = view.get<const TransformComponent>(entity);
         const auto& sprite = view.get<const SpriteComponent>(entity);
 
-        const SpriteAsset* asset = resourceManager.getSpriteAsset(renderer, sprite.assetId);
+        const SpriteAsset* asset = resourceManager.getSpriteAsset(sprite.assetId);
         if (!asset) {
             std::cerr << "RenderSystem::draw - Asset not found for id: " << sprite.assetId << std::endl;
             continue;

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "../core/scene.hpp"
+#include "../core/scene_loader.hpp"
 #include "../systems/renderer.hpp"
 #include "../systems/animation.hpp"
 #include "../systems/player_intent_system.hpp"
@@ -23,6 +24,8 @@ class InputManager;
 class GameScene : public Scene {
 public:
     GameScene(
+        std::unique_ptr<ISceneLoader> sceneLoader,
+        const std::string& sceneFilePath,
         std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
         std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
         std::unique_ptr<AnimationStateSystem> animationStateSystem,
@@ -41,6 +44,8 @@ public:
     void render(SDL_Renderer* renderer) override;
 
 private:
+    std::unique_ptr<ISceneLoader> m_sceneLoader;
+    std::string m_sceneFilePath;
     std::unique_ptr<RenderSystem> m_renderSystem;
     std::unique_ptr<AnimationSystem> m_animationSystem;
     std::unique_ptr<PlayerIntentSystem> m_playerIntentSystem;

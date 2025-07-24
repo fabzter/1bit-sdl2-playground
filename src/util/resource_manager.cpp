@@ -20,38 +20,33 @@ ResourceManager::ResourceManager() {
 
 ResourceManager::~ResourceManager() = default; // Smart pointers handle cleanup
 
-const SpriteAsset *ResourceManager::getSpriteAsset(SDL_Renderer *renderer, const std::string &assetId) {
+const SpriteAsset* ResourceManager::getSpriteAsset(const std::string& assetId) const {
     auto it = m_spriteAssetCache.find(assetId);
     if (it != m_spriteAssetCache.end()) {
         return it->second.get();
     }
+    // Return nullptr if the asset was not pre-loaded.
+    return nullptr;
+}
 
+const SpriteAsset* ResourceManager::loadSpriteAsset(SDL_Renderer* renderer, const std::string& assetId) {
+    // First, check the cache.
+    if (auto* asset = getSpriteAsset(assetId)) {
+        return asset;
+    }
+
+    // If not in cache, load from file.
     std::string fullPath = m_basePath + "res/sprites/" + assetId + ".sprite";
     std::cout << "Loading sprite asset from: " << fullPath << std::endl;
 
     std::unique_ptr<SpriteAsset> asset = SpriteAssetLoader::loadFromFile(renderer, fullPath);
     if (asset) {
-        // We still use the requested assetId as the key for the cache.
-
-        // Enforce that the ID in the file matches the requested assetId.
         if (asset->assetId != assetId) {
-            std::cerr << "Asset ID Mismatch! File '" << fullPath
-                      << "' has SPRITE_NAME '" << asset->assetId
-                      << "' but was requested with ID '" << assetId << "'." << std::endl;
-            return nullptr; // Return nullptr to indicate a loading failure.
+            std::cerr << "Asset ID Mismatch! ..." << std::endl;
+            return nullptr;
         }
-
         auto [inserted_it, success] = m_spriteAssetCache.emplace(assetId, std::move(asset));
         return inserted_it->second.get();
     }
-
     return nullptr;
-}
-
-void ResourceManager::preloadSpriteAssets(SDL_Renderer* renderer, const std::vector<std::string>& assetIds) {
-    std::cout << "Preloading " << assetIds.size() << " sprite asset(s)..." << std::endl;
-    for (const auto& assetId : assetIds) {
-        getSpriteAsset(renderer, assetId);
-    }
-    std::cout << "Preloading complete." << std::endl;
 }
