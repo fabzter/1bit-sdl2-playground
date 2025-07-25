@@ -18,7 +18,8 @@ int main(int argc, char* argv[]) {
         std::make_unique<AnimationSystem>(),
         std::make_unique<RenderSystem>(),
         std::make_unique<TilemapRenderSystem>(),
-        std::make_unique<CameraSystem>()
+        std::make_unique<CameraSystem>(),
+        std::make_unique<DebugInfoSystem>()
     );
     engine.getSceneManager()->registerScene("Level1", std::move(gameScene));
 

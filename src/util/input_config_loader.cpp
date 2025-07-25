@@ -50,6 +50,11 @@ void initializeMaps() {
     keyMap["UP"] = SDLK_UP; keyMap["DOWN"] = SDLK_DOWN;
     keyMap["LEFT"] = SDLK_LEFT; keyMap["RIGHT"] = SDLK_RIGHT;
 
+    keyMap["F1"] = SDLK_F1; keyMap["F2"] = SDLK_F2; keyMap["F3"] = SDLK_F3;
+    keyMap["F4"] = SDLK_F4; keyMap["F5"] = SDLK_F5; keyMap["F6"] = SDLK_F6;
+    keyMap["F7"] = SDLK_F7; keyMap["F8"] = SDLK_F8; keyMap["F9"] = SDLK_F9;
+    keyMap["F10"] = SDLK_F10; keyMap["F11"] = SDLK_F11; keyMap["F12"] = SDLK_F12;
+
     // Populate reverse key map
     for (const auto& pair : keyMap) {
         keyNameMap[pair.second] = pair.first;

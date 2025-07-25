@@ -21,7 +21,8 @@ GameScene::GameScene(
     std::unique_ptr<AnimationSystem> animationSystem,
     std::unique_ptr<RenderSystem> renderSystem,
     std::unique_ptr<TilemapRenderSystem> tilemapRenderSystem,
-    std::unique_ptr<CameraSystem> cameraSystem)
+    std::unique_ptr<CameraSystem> cameraSystem,
+    std::unique_ptr<DebugInfoSystem> debugInfoSystem)
 :  m_sceneLoader(std::move(sceneLoader)),
 m_sceneFilePath(sceneFilePath),
 m_playerIntentSystem(std::move(playerIntentSystem)),
@@ -30,7 +31,8 @@ m_animationStateSystem(std::move(animationStateSystem)),
 m_animationSystem(std::move(animationSystem)),
 m_renderSystem(std::move(renderSystem)),
 m_tilemapRenderSystem(std::move(tilemapRenderSystem)),
-m_cameraSystem(std::move(cameraSystem))
+m_cameraSystem(std::move(cameraSystem)),
+m_debugInfoSystem(std::move(debugInfoSystem))
 
 {}
 
@@ -79,6 +81,7 @@ void GameScene::update(float deltaTime) {
     m_topDownMovementSystem->update(m_registry, deltaTime); // 2. Apply movement from intent
     m_animationStateSystem->update(m_registry);
     m_animationSystem->update(m_registry,  deltaTime, *m_resourceManager);
+    m_debugInfoSystem->update(m_registry, *m_inputManager, *m_resourceManager);
 }
 
 //TODO: is is true that tiles will always be in the background? what about going behind a building in the game?

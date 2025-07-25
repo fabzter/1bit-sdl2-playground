@@ -4,6 +4,7 @@
 #include <tmxlite/Map.hpp>
 #include <tmxlite/TileLayer.hpp>
 #include <iostream>
+#include <stdexcept>
 
 bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity, ResourceManager& resourceManager, const std::string& sourcePath) {
     tmx::Map map;
@@ -33,10 +34,24 @@ bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity, Resou
             const auto* tileLayer = dynamic_cast<const tmx::TileLayer*>(layer.get());
             
             TileLayer currentLayer;
-            currentLayer.widthInTiles = map.getTileCount().x;
-            currentLayer.heightInTiles = map.getTileCount().y;
-            currentLayer.tileIds.reserve(tileLayer->getTiles().size());
+            currentLayer.widthInTiles = tileLayer->getSize().x;
+            currentLayer.heightInTiles = tileLayer->getSize().y;
 
+            // ---- VALIDATION CHECK ----
+            const auto& tiles = tileLayer->getTiles();
+            size_t expectedTileCount = currentLayer.widthInTiles * currentLayer.heightInTiles;
+
+            if (tiles.size() != expectedTileCount) {
+                std::string errorMsg = "TmxLoader Error: Tile data mismatch in '" + sourcePath + "'. "
+                                     + "Layer '" + layer->getName() + "' declares dimensions "
+                                     + std::to_string(currentLayer.widthInTiles) + "x" + std::to_string(currentLayer.heightInTiles)
+                                     + " (expected " + std::to_string(expectedTileCount) + " tiles), "
+                                     + "but contains data for " + std::to_string(tiles.size()) + " tiles.";
+                throw std::runtime_error(errorMsg);
+            }
+            // ------------------------
+
+            currentLayer.tileIds.reserve(tileLayer->getTiles().size());
             for(const auto& tile : tileLayer->getTiles()) {
                 // The tile.ID is the Global ID (GID) from the tileset.
                 // Tiled uses 0 for empty tiles, so this maps directly to our system.

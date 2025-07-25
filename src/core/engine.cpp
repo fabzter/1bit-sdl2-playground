@@ -159,6 +159,8 @@ void Engine::render() {
 
 void Engine::setupDefaultInputs() {
     // Keyboard
+    m_inputManager->mapKeyToAction(SDLK_F1, "dump_debug_info");
+
     m_inputManager->mapKeyToAction(SDLK_w, "move_up");
     m_inputManager->mapKeyToAction(SDLK_UP, "move_up");
     m_inputManager->mapKeyToAction(SDLK_s, "move_down");

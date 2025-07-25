@@ -3,7 +3,8 @@
 #include "../components/camera.hpp"
 #include "../components/transform.hpp"
 #include "../core/context.hpp"
-#include <algorithm> // For std::max/min
+#include <algorithm>
+#include <iostream>
 
 void TilemapRenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager) {
     // There should only be one tilemap entity, find it.
@@ -31,10 +32,10 @@ void TilemapRenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
     const float cameraTop = camTransform.position.y - screen.h / 2.0f;
 
     // Determine which tiles are visible
-    const int startCol = std::max(0, static_cast<int>(cameraLeft / tilemap.tileWidth));
-    const int startRow = std::max(0, static_cast<int>(cameraTop / tilemap.tileHeight));
-    const int endCol = std::min(tilemap.layers[0].widthInTiles, static_cast<int>(std::ceil((cameraLeft + screen.w) / tilemap.tileWidth)));
-    const int endRow = std::min(tilemap.layers[0].heightInTiles, static_cast<int>(std::ceil((cameraTop + screen.h) / tilemap.tileHeight)));
+    const int startCol = std::max(0, static_cast<int>(std::floor(cameraLeft / tilemap.tileWidth)));
+    const int startRow = std::max(0, static_cast<int>(std::floor(cameraTop / tilemap.tileHeight)));
+    const int endCol = std::min(tilemap.layers[0].widthInTiles, static_cast<int>(std::floor((cameraLeft + screen.w - 1) / tilemap.tileWidth) + 1));
+    const int endRow = std::min(tilemap.layers[0].heightInTiles, static_cast<int>(std::floor((cameraTop + screen.h - 1) / tilemap.tileHeight) + 1));
 
     SDL_Texture* texture = tileset->textureAtlas.get();
     
@@ -52,15 +53,14 @@ void TilemapRenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
                 int srcY = (tileIndex / tileset->columns) * tileset->tileHeight;
                 SDL_Rect srcRect = {srcX, srcY, tileset->tileWidth, tileset->tileHeight};
 
-                // Calculate destination rect on the screen
-                SDL_FRect destRect = {
-                    (col * tilemap.tileWidth) - cameraLeft,
-                    (row * tilemap.tileHeight) - cameraTop,
-                    static_cast<float>(tilemap.tileWidth),
-                    static_cast<float>(tilemap.tileHeight)
+                // Calculate destination rect using integer coordinates for pixel-perfect drawing.
+                SDL_Rect destRect = {
+                    static_cast<int>(std::round((col * tilemap.tileWidth) - cameraLeft)),
+                    static_cast<int>(std::round((row * tilemap.tileHeight) - cameraTop)),
+                    tilemap.tileWidth,
+                    tilemap.tileHeight
                 };
-
-                SDL_RenderCopyF(renderer, texture, &srcRect, &destRect);
+                SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
             }
         }
     }
