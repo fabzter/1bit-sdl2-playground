@@ -23,6 +23,9 @@ private:
     void parseMovement(entt::registry& registry, entt::entity entity, const toml::table& componentData);
     void parseIntent(entt::registry& registry, entt::entity entity);
     void parseCamera(entt::registry& registry, entt::entity entity);
+    void parseTilemap(entt::registry &registry, SDL_Renderer *renderer,
+        ResourceManager *resourceManager, const entt::registry::entity_type newEntity,
+        toml::impl::table_proxy_pair<false>::value_type &compData);
 
     // Helpers for the blackboard, which can contain many types
     void parseBlackboard(entt::registry& registry, entt::entity entity, const toml::table& componentData,

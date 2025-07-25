@@ -6,6 +6,7 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include "sprite_asset_loader.hpp"
+#include "tileset_asset.hpp"
 
 // Forward-declare the custom deleter
 struct SDL_Texture_Deleter;
@@ -32,9 +33,13 @@ public:
      */
     const SpriteAsset* getSpriteAsset(const std::string& assetId) const;
 
+    const TilesetAsset* loadTilesetAsset(SDL_Renderer* renderer, const std::string& assetId, const std::string& sourceHint = "");
+    const TilesetAsset* getTilesetAsset(const std::string& assetId) const;
+
     [[nodiscard]] const std::string& getBasePath() const { return m_basePath; }
 
 private:
     std::string m_basePath;
     std::unordered_map<std::string, std::unique_ptr<SpriteAsset>> m_spriteAssetCache;
+    std::unordered_map<std::string, std::unique_ptr<TilesetAsset>> m_tilesetAssetCache;
 };

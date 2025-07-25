@@ -9,6 +9,7 @@
 #include "../systems/top_down_movement_system.hpp"
 #include "../systems/animation_state_system.hpp"
 #include "../systems/camera_system.hpp"
+#include "../systems/tilemap_render_system.hpp"
 
 // Forward-declare systems and managers
 class RenderSystem;
@@ -31,6 +32,7 @@ public:
         std::unique_ptr<AnimationStateSystem> animationStateSystem,
         std::unique_ptr<AnimationSystem> animationSystem,
         std::unique_ptr<RenderSystem> renderSystem,
+        std::unique_ptr<TilemapRenderSystem> tilemapRenderSystem,
         std::unique_ptr<CameraSystem> cameraSystem
     );
     ~GameScene() override = default;
@@ -47,6 +49,7 @@ private:
     std::unique_ptr<ISceneLoader> m_sceneLoader;
     std::string m_sceneFilePath;
     std::unique_ptr<RenderSystem> m_renderSystem;
+    std::unique_ptr<TilemapRenderSystem> m_tilemapRenderSystem;
     std::unique_ptr<AnimationSystem> m_animationSystem;
     std::unique_ptr<PlayerIntentSystem> m_playerIntentSystem;
     std::unique_ptr<TopDownMovementSystem> m_topDownMovementSystem;

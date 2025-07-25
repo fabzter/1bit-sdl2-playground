@@ -13,6 +13,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tomlplusplus)
 # --- END SECTION ---
 
+set(TMXLITE_STATIC_LIB ON)
+set(TMXLITE_USE_ZLIB OFF)
+set(TMXLITE_USE_ZSTD OFF)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite)
+include_directories(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite/include)
+
 # Set C++ Standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -68,7 +74,8 @@ target_include_directories(game PUBLIC
 )
 
 # Link SDL2 to the Executable
-target_link_libraries(game
+target_link_libraries(game PRIVATE
+        tmxlite
         ${SDL2_LIBRARIES}
 )
 

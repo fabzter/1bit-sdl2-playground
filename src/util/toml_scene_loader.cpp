@@ -1,16 +1,34 @@
 #include "toml_scene_loader.hpp"
 #include "resource_manager.hpp"
+#include "tmx_loader.hpp"
 #include "../components/transform.hpp"
 #include "../components/sprite.hpp"
 #include "../components/player_control.hpp"
 #include "../components/movement.hpp"
 #include "../components/camera.hpp"
 #include "../components/blackboard.hpp"
+#include "../components/tilemap.hpp"
 #include "../core/context.hpp"
 #include "../core/blackboard_keys.hpp"
 #include <iostream>
 
 #include "../components/intent.hpp"
+
+void TomlSceneLoader::parseTilemap(entt::registry &registry, SDL_Renderer *renderer,
+    ResourceManager *resourceManager, const entt::registry::entity_type newEntity,
+    toml::impl::table_proxy_pair<false>::value_type &compData) {
+    // We parse this in Pass 1 because it doesn't reference other entities.
+    // We create a temporary loader to do the job.
+    TmxLoader tmxLoader;
+    std::string mapFile = compData.as_table()->get("mapFile")->value_or<std::string>("");
+    if (!mapFile.empty()) {
+        std::string fullMapPath = resourceManager->getBasePath() + mapFile;
+        // Pass the renderer to the context so the TmxLoader can access it
+        registry.ctx().emplace<SDL_Renderer*>(renderer);
+        tmxLoader.load(registry, newEntity, *resourceManager, fullMapPath);
+        registry.ctx().erase<SDL_Renderer*>(); // Clean up context
+    }
+}
 
 // Main loading function
 bool TomlSceneLoader::load(entt::registry& registry,
@@ -80,6 +98,7 @@ bool TomlSceneLoader::load(entt::registry& registry,
                             else if (compName == "Intent") parseIntent(registry, newEntity);
                             else if (compName == "Movement") parseMovement(registry, newEntity, *compData.as_table());
                             else if (compName == "Camera") parseCamera(registry, newEntity);
+                            else if (compName == "Tilemap") parseTilemap(registry, renderer, resourceManager, newEntity, compData);
                             // NOTE: We skip the Blackboard in Pass 1 because it might contain entity references.
                         }
                     }

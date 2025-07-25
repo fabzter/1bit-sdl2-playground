@@ -1,5 +1,10 @@
 # Main scene file for our game
 [[entities]]
+name = "World"
+  [entities.components.Tilemap]
+  mapFile = "res/maps/level1.tmx"
+
+[[entities]]
 name = "Player"
 
   [entities.components.Transform]

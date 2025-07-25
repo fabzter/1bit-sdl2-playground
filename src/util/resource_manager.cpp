@@ -1,4 +1,5 @@
 #include "resource_manager.hpp"
+#include "tileset_asset_loader.hpp"
 #include <iostream>
 
 void SDL_Texture_Deleter::operator()(SDL_Texture* texture) const {
@@ -47,6 +48,32 @@ const SpriteAsset* ResourceManager::loadSpriteAsset(SDL_Renderer* renderer, cons
         }
         auto [inserted_it, success] = m_spriteAssetCache.emplace(assetId, std::move(asset));
         return inserted_it->second.get();
+    }
+    return nullptr;
+}
+
+const TilesetAsset* ResourceManager::loadTilesetAsset(SDL_Renderer* renderer,
+    const std::string& assetId, const std::string& sourceHint) {
+    if (auto* asset = getTilesetAsset(assetId)) {
+        return asset;
+    }
+    // For now, we assume our custom .tileset format.
+    //TODO: Later, we could use sourceHint to decide which loader to use (e.g., if it ends in .png).
+    std::string fullPath = m_basePath + "res/tilesets/" + assetId + ".tileset";
+    std::cout << "Loading tileset asset from: " << fullPath << std::endl;
+
+    std::unique_ptr<TilesetAsset> asset = TilesetAssetLoader::loadFromFile(renderer, fullPath);
+    if (asset) {
+        auto [inserted_it, success] = m_tilesetAssetCache.emplace(assetId, std::move(asset));
+        return inserted_it->second.get();
+    }
+    return nullptr;
+}
+
+const TilesetAsset* ResourceManager::getTilesetAsset(const std::string& assetId) const {
+    auto it = m_tilesetAssetCache.find(assetId);
+    if (it != m_tilesetAssetCache.end()) {
+        return it->second.get();
     }
     return nullptr;
 }

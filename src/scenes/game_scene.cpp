@@ -20,6 +20,7 @@ GameScene::GameScene(
     std::unique_ptr<AnimationStateSystem> animationStateSystem,
     std::unique_ptr<AnimationSystem> animationSystem,
     std::unique_ptr<RenderSystem> renderSystem,
+    std::unique_ptr<TilemapRenderSystem> tilemapRenderSystem,
     std::unique_ptr<CameraSystem> cameraSystem)
 :  m_sceneLoader(std::move(sceneLoader)),
 m_sceneFilePath(sceneFilePath),
@@ -28,6 +29,7 @@ m_topDownMovementSystem(std::move(topDownMovementSystem)),
 m_animationStateSystem(std::move(animationStateSystem)),
 m_animationSystem(std::move(animationSystem)),
 m_renderSystem(std::move(renderSystem)),
+m_tilemapRenderSystem(std::move(tilemapRenderSystem)),
 m_cameraSystem(std::move(cameraSystem))
 
 {}
@@ -79,7 +81,11 @@ void GameScene::update(float deltaTime) {
     m_animationSystem->update(m_registry,  deltaTime, *m_resourceManager);
 }
 
+//TODO: is is true that tiles will always be in the background? what about going behind a building in the game?
 void GameScene::render(SDL_Renderer* renderer) {
+    // Draw the tilemap FIRST (in the background)
+    m_tilemapRenderSystem->draw(renderer, m_registry, *m_resourceManager);
+    // Draw sprites and other objects on top
     // Note: resource manager is still passed directly here, which is fine.
     m_renderSystem->draw(renderer, m_registry, *m_resourceManager);
 }
