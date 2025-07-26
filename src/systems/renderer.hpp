@@ -1,14 +1,13 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include "../util/resource_manager.hpp"
-#include <entt/entt.hpp>
+#include "../core/systems/isystem.hpp"
 
-class RenderSystem {
+class RenderSystem: public IRenderSystem{
 public:
     RenderSystem() = default;
 
-    void draw(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager);
+    void draw(SDL_Renderer* renderer, entt::registry& registry,
+        ResourceManager& resourceManager) override;
 
 private:
 };

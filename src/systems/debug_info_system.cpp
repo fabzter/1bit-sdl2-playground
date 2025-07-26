@@ -2,7 +2,8 @@
 #include "../components/tilemap.hpp"
 #include <iostream>
 
-void DebugInfoSystem::update(entt::registry& registry, const InputManager& inputManager, ResourceManager& resourceManager) {
+void DebugInfoSystem::update(entt::registry& registry, InputManager& inputManager,
+        ResourceManager& resourceManager, float deltaTime) {
     if (inputManager.isActionJustPressed("dump_debug_info")) {
         auto mapView = registry.view<TilemapComponent>();
         if (mapView.empty()) {

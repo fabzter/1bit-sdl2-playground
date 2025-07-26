@@ -1,12 +1,11 @@
 #pragma once
 
-#include <entt/entt.hpp>
-#include <SDL2/SDL.h>
-#include "../util/resource_manager.hpp"
+#include "../core/systems/isystem.hpp"
 
-class TilemapRenderSystem {
+class TilemapRenderSystem: public IRenderSystem {
 public:
     TilemapRenderSystem() = default;
 
-    void draw(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager);
+    void draw(SDL_Renderer* renderer, entt::registry& registry,
+        ResourceManager& resourceManager) override;
 };

@@ -1,10 +1,9 @@
 #include "animation.hpp"
+#include "../util/sprite_asset_loader.hpp"
 #include "../components/sprite.hpp"
-#include <iostream>
 
-void AnimationSystem::update(entt::registry& registry,
-    float deltaTime,
-    ResourceManager& resourceManager) {
+void AnimationSystem::update(entt::registry& registry, InputManager& inputManager,
+    ResourceManager& resourceManager, float deltaTime) {
     auto view = registry.view<SpriteComponent>();
 
     for (const auto entity : view) {

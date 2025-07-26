@@ -12,7 +12,8 @@ static float lerp(float a, float b, float t) {
     return a + t * (b - a);
 }
 
-void CameraSystem::update(entt::registry& registry, float deltaTime) {
+void CameraSystem::update(entt::registry& registry, InputManager& inputManager,
+        ResourceManager& resourceManager, float deltaTime) {
     if (!registry.ctx().contains<ActiveCamera>()) return; // No camera to update
     const auto cameraEntity = registry.ctx().get<ActiveCamera>().entity;
     if (!registry.valid(cameraEntity) || !registry.all_of<BlackboardComponent>(cameraEntity)) return;

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <entt/entt.hpp>
+#include "../core/systems/isystem.hpp"
 
-class AnimationStateSystem {
+class AnimationStateSystem: public IUpdateSystem {
 public:
     AnimationStateSystem() = default;
-    void update(entt::registry& registry);
+    void update(entt::registry& registry, InputManager& inputManager, ResourceManager& resourceManager,
+        float deltaTime) override;;
 };

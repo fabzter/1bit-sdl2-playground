@@ -12,32 +12,18 @@
 #include <iostream>
 #include <vector>
 
-GameScene::GameScene(
-    std::unique_ptr<ISceneLoader> sceneLoader,
-    const std::string& sceneFilePath,
-    std::unique_ptr<PlayerIntentSystem> playerIntentSystem,
-    std::unique_ptr<TopDownMovementSystem> topDownMovementSystem,
-    std::unique_ptr<AnimationStateSystem> animationStateSystem,
-    std::unique_ptr<AnimationSystem> animationSystem,
-    std::unique_ptr<RenderSystem> renderSystem,
-    std::unique_ptr<TilemapRenderSystem> tilemapRenderSystem,
-    std::unique_ptr<CameraSystem> cameraSystem,
-    std::unique_ptr<DebugInfoSystem> debugInfoSystem)
+GameScene::GameScene(std::unique_ptr<ISceneLoader> sceneLoader,
+    std::string sceneFilePath)
 :  m_sceneLoader(std::move(sceneLoader)),
-m_sceneFilePath(sceneFilePath),
-m_playerIntentSystem(std::move(playerIntentSystem)),
-m_topDownMovementSystem(std::move(topDownMovementSystem)),
-m_animationStateSystem(std::move(animationStateSystem)),
-m_animationSystem(std::move(animationSystem)),
-m_renderSystem(std::move(renderSystem)),
-m_tilemapRenderSystem(std::move(tilemapRenderSystem)),
-m_cameraSystem(std::move(cameraSystem)),
-m_debugInfoSystem(std::move(debugInfoSystem))
-
+m_sceneFilePath(sceneFilePath)
 {}
 
+void GameScene::setSystemManager(std::unique_ptr<SystemManager> systemManager) {
+    m_systemManager = std::move(systemManager);
+}
+
 void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
-                     InputManager* inputManager, const SceneContext& context) {
+    InputManager* inputManager, const SceneContext& context) {
     m_resourceManager = resourceManager;
     m_inputManager = inputManager;
 
@@ -75,20 +61,13 @@ void GameScene::handleEvents(const SDL_Event& event) {
 }
 
 void GameScene::update(float deltaTime) {
-    // Update systems in logical order
-    m_cameraSystem->update(m_registry, deltaTime);
-    m_playerIntentSystem->update(m_registry, *m_inputManager, deltaTime); // 1. Populate intent
-    m_topDownMovementSystem->update(m_registry, deltaTime); // 2. Apply movement from intent
-    m_animationStateSystem->update(m_registry);
-    m_animationSystem->update(m_registry,  deltaTime, *m_resourceManager);
-    m_debugInfoSystem->update(m_registry, *m_inputManager, *m_resourceManager);
+    // Delegate to the SystemManager
+    m_systemManager->updateAll(m_registry, *m_inputManager, *m_resourceManager, deltaTime);
 }
 
 //TODO: is is true that tiles will always be in the background? what about going behind a building in the game?
 void GameScene::render(SDL_Renderer* renderer) {
-    // Draw the tilemap FIRST (in the background)
-    m_tilemapRenderSystem->draw(renderer, m_registry, *m_resourceManager);
-    // Draw sprites and other objects on top
-    // Note: resource manager is still passed directly here, which is fine.
-    m_renderSystem->draw(renderer, m_registry, *m_resourceManager);
+    // Delegate to the SystemManager
+    m_systemManager->drawAll(renderer, m_registry, *m_resourceManager);
+
 }

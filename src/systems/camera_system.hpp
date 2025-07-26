@@ -1,10 +1,11 @@
 #pragma once
 
-#include <entt/entt.hpp>
+#include "../core/systems/isystem.hpp"
 
-class CameraSystem {
+class CameraSystem: public IUpdateSystem {
 public:
     CameraSystem() = default;
 
-    void update(entt::registry& registry, float deltaTime);
+    void update(entt::registry& registry, InputManager& inputManager,
+        ResourceManager& resourceManager, float deltaTime) override;
 };

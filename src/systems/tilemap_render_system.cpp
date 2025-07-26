@@ -3,10 +3,12 @@
 #include "../components/camera.hpp"
 #include "../components/transform.hpp"
 #include "../core/context.hpp"
+#include "../util/resource_manager.hpp"
 #include <algorithm>
 #include <iostream>
 
-void TilemapRenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager) {
+void TilemapRenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
+        ResourceManager& resourceManager) {
     // There should only be one tilemap entity, find it.
     auto mapView = registry.view<TilemapComponent>();
     if (mapView.empty()) {

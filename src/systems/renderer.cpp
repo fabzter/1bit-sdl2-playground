@@ -1,8 +1,9 @@
 #include "renderer.hpp"
 #include "../components/transform.hpp"
 #include "../components/sprite.hpp"
-#include "../components/camera.hpp"
 #include  "../core/context.hpp"
+#include "../util/resource_manager.hpp"
+#include "../util/sprite_asset.hpp"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -21,7 +22,7 @@ namespace {
 }
 
 void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
-    ResourceManager& resourceManager) {
+        ResourceManager& resourceManager) {
     if (!registry.ctx().contains<ActiveCamera>()) return; // No active camera
     // --- get the Active Camera ---
     const auto cameraEntity = registry.ctx().get<ActiveCamera>().entity;

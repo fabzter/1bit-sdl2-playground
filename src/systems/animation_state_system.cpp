@@ -4,7 +4,8 @@
 #include "../core/blackboard_keys.hpp"
 #include <iostream>
 
-void AnimationStateSystem::update(entt::registry& registry) {
+void AnimationStateSystem::update(entt::registry& registry, InputManager& inputManager,
+    ResourceManager& resourceManager, float deltaTime) {
     const auto view = registry.view<const BlackboardComponent, SpriteComponent>();
 
     for (const auto entity : view) {

@@ -6,8 +6,8 @@
 #include "../components/movement.hpp"
 #include <iostream>
 
-void PlayerIntentSystem::update(entt::registry& registry, const InputManager& inputManager,
-    float deltaTime) {
+void PlayerIntentSystem::update(entt::registry& registry, InputManager& inputManager,
+    ResourceManager& resourceManager, float deltaTime) {
     auto view = registry.view<PlayerControlComponent, IntentComponent>();
 
     for (auto entity : view) {

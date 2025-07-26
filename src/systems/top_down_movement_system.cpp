@@ -6,7 +6,8 @@
 #include "../core/blackboard_keys.hpp"
 #include <iostream>
 
-void TopDownMovementSystem::update(entt::registry& registry, float deltaTime) {
+void TopDownMovementSystem::update(entt::registry& registry, InputManager& inputManager,
+        ResourceManager& resourceManager, float deltaTime) {
     // This system acts on any entity that has an intent, a transform, and movement stats.
     auto view = registry.view<const IntentComponent, TransformComponent,
                               const MovementComponent, BlackboardComponent>();
