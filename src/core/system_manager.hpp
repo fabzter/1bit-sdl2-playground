@@ -9,6 +9,7 @@ public:
     void addUpdateSystem(std::unique_ptr<IUpdateSystem> system);
     void addRenderSystem(std::unique_ptr<IRenderSystem> system);
 
+    void initAll(entt::registry& registry);
     void updateAll(entt::registry& registry, InputManager& inputManager, ResourceManager& resourceManager, float deltaTime);
     void drawAll(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager);
 

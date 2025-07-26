@@ -21,12 +21,55 @@ namespace {
     };
 }
 
+void RenderSystem::onSpriteUpdate(entt::registry&, entt::entity) {
+    m_isDirty = true;
+}
+
+void RenderSystem::init(entt::registry& registry) {
+    // When a SpriteComponent is added or updated, mark our render queue as dirty.
+    // The lambda captures `this` to modify the m_isDirty flag.
+    auto onUpdate = [this](entt::registry&, entt::entity) {
+        this->m_isDirty = true;
+    };
+
+    registry.on_construct<SpriteComponent>().connect<&RenderSystem::onSpriteUpdate>(this);
+    registry.on_update<SpriteComponent>().connect<&RenderSystem::onSpriteUpdate>(this);
+    registry.on_destroy<SpriteComponent>().connect<&RenderSystem::onSpriteUpdate>(this);
+}
+
 void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
         ResourceManager& resourceManager) {
     if (!registry.ctx().contains<ActiveCamera>()) return; // No active camera
     // --- get the Active Camera ---
     const auto cameraEntity = registry.ctx().get<ActiveCamera>().entity;
     if (!registry.valid(cameraEntity)) return; // Camera was destroyed
+
+    // ---- SORTING OPTIMIZATION ----
+    if (m_isDirty) {
+        // 1. Collect all entities with a SpriteComponent.
+        auto view = registry.view<const SpriteComponent>();
+        std::vector<Renderable> tempQueue;
+        tempQueue.reserve(view.size());
+        for (const auto entity : view) {
+            const auto& sprite = view.get<const SpriteComponent>(entity);
+            tempQueue.emplace_back(Renderable{entity, sprite.getSortKey()});
+        }
+
+        // 2. Sort the temporary list.
+        std::sort(tempQueue.begin(), tempQueue.end());
+
+        // 3. Update the persistent render queue.
+        m_renderQueue.clear();
+        m_renderQueue.reserve(tempQueue.size());
+        for (const auto& renderable : tempQueue) {
+            m_renderQueue.push_back(renderable.entity);
+        }
+
+        // 4. Mark as clean until the next change.
+        m_isDirty = false;
+    }
+    // ----------------------------
+
 
     // --- Camera calculation ---
     const auto& screen = registry.ctx().get<ScreenDimensions>();
@@ -37,27 +80,12 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
     const float cameraOffsetX = cameraPos.x - screen.w / 2.0f;
     const float cameraOffsetY = cameraPos.y - screen.h / 2.0f;
 
-    // --- COLLECT ---
-    // Create the render queue for this frame.
-    std::vector<Renderable> renderQueue;
-    auto view = registry.view<const TransformComponent, const SpriteComponent>();
-    renderQueue.reserve(view.size_hint()); // Pre-allocate memory
-    for (const auto entity : view) {
-        const auto& sprite = view.get<const SpriteComponent>(entity);
-        renderQueue.emplace_back(Renderable{entity, sprite.getSortKey()});
-    }
-
-    // --- SORT ---
-    // Sort the queue. Thanks to the operator< overload, it's a one-liner.
-    // TODO: explore options to avoid sorting on every call
-    std::sort(renderQueue.begin(), renderQueue.end());
-
     // --- DRAW ---
     // Iterate over each entity in the view
-    for (const auto renderable : renderQueue) {
+    for (const auto entity : m_renderQueue) {
         // Get the components from the renderable's entity
-        const auto& transform = registry.get<const TransformComponent>(renderable.entity);
-        const auto& sprite = registry.get<const SpriteComponent>(renderable.entity);
+        const auto& transform = registry.get<const TransformComponent>(entity);
+        const auto& sprite = registry.get<const SpriteComponent>(entity);
 
         const SpriteAsset* asset = resourceManager.getSpriteAsset(sprite.assetId);
         if (!asset) {

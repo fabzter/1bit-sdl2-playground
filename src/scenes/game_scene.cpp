@@ -31,6 +31,9 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     // Use the loader to populate the registry!
     m_sceneLoader->load(m_registry, renderer, m_resourceManager, m_sceneFilePath);
 
+    // Initialize all systems now that the registry is populated.
+    m_systemManager->initAll(m_registry);
+
     std::cout << "GameScene loaded." << std::endl;
 }
 

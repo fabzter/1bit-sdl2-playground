@@ -13,6 +13,7 @@ class InputManager;
 class IUpdateSystem {
 public:
     virtual ~IUpdateSystem() = default;
+    virtual void init(entt::registry& registry) {}
     virtual void update(entt::registry& registry, InputManager& inputManager,
         ResourceManager& resourceManager, float deltaTime) = 0;
 };
@@ -23,6 +24,7 @@ public:
 class IRenderSystem {
 public:
     virtual ~IRenderSystem() = default;
+    virtual void init(entt::registry& registry) {}
     virtual void draw(SDL_Renderer* renderer, entt::registry& registry,
         ResourceManager& resourceManager) = 0;
 };
