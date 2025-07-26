@@ -3,6 +3,9 @@
 #include "../components/blackboard.hpp"
 #include "../core/blackboard_keys.hpp"
 #include <iostream>
+#include <entt/entt.hpp>
+
+using namespace entt::literals;
 
 void AnimationStateSystem::update(entt::registry& registry, InputManager& inputManager,
     ResourceManager& resourceManager, float deltaTime) {
@@ -21,10 +24,11 @@ void AnimationStateSystem::update(entt::registry& registry, InputManager& inputM
             }
         }
 
+        // ---- THIS IS THE OPTIMIZED LOGIC ----
         if (isMoving) {
-            sprite.currentState = "walk";
+            sprite.currentState = "walk"_hs;
         } else {
-            sprite.currentState = "idle";
+            sprite.currentState = "idle"_hs;
         }
     }
 }

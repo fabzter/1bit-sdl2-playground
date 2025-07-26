@@ -3,6 +3,9 @@
 #include <string>
 #include <cstdint>
 #include <SDL2/SDL.h>
+#include <entt/entt.hpp>
+
+using namespace entt::literals;
 
 /**
  * @struct SpriteComponent
@@ -44,7 +47,7 @@ struct SpriteComponent {
      * @brief The name of the current animation state (e.g., "idle", "walk").
      * The AnimationSystem uses this to find the correct animation sequence.
      */
-    std::string currentState = "idle";
+    entt::hashed_string currentState{"idle"_hs};
     
     /**
      * @brief The current frame index within the animation sequence.

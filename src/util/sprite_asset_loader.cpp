@@ -59,7 +59,7 @@ std::unique_ptr<SpriteAsset> SpriteAssetLoader::loadFromFile(SDL_Renderer* rende
                     sequence.push_back({frameIndex, currentDuration});
                 }
             }
-            asset->animations[animName] = sequence;
+            asset->animations[entt::hashed_string{animName.c_str()}] = sequence;
         }
     }
 

@@ -5,7 +5,16 @@
 #include <vector>
 #include <unordered_map>
 #include <SDL2/SDL.h>
+#include <entt/entt.hpp>
 
+// This is a template specialization that teaches std::hash how to work with entt::hashed_string.
+// It's required for using hashed_string as a key in std::unordered_map.
+template <>
+struct std::hash<entt::hashed_string> {
+    std::size_t operator()(const entt::hashed_string& hs) const {
+        return hs.value();
+    }
+};
 
 // Forward-declare the custom deleter
 struct SDL_Texture_Deleter {
@@ -39,5 +48,5 @@ struct SpriteAsset {
     std::unique_ptr<SDL_Texture, SDL_Texture_Deleter> textureAtlas;
 
     // Maps a state name (e.g., "idle", "walk") to its animation sequence.
-    std::unordered_map<std::string, AnimationSequence> animations;
+    std::unordered_map<entt::hashed_string, AnimationSequence> animations;
 };
