@@ -6,7 +6,8 @@
 #include <iostream>
 #include <stdexcept>
 
-bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity, ResourceManager& resourceManager, const std::string& sourcePath) {
+bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity,
+    ResourceManager& resourceManager, const std::string& sourcePath) {
     tmx::Map map;
     if (!map.load(sourcePath)) {
         std::cerr << "TmxLoader: Failed to load map file: " << sourcePath << std::endl;

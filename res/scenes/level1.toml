@@ -9,7 +9,7 @@ name = "Player"
 
   [entities.components.Transform]
   position = [640.0, 360.0]
-  scale = [2.0, 2.0]
+  scale = [1.0, 1.0]
 
   [entities.components.Sprite]
   assetId = "player"
