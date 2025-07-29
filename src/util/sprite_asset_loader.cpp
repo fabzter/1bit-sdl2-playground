@@ -12,6 +12,13 @@ std::unique_ptr<SpriteAsset> SpriteAssetLoader::loadFromFile(SDL_Renderer* rende
         return nullptr;
     }
 
+    //get the pixel format
+    SDL_PixelFormat* pixelFormat = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+    if (!pixelFormat) {
+        std::cerr << "Failed to allocate pixel format: " << SDL_GetError() << std::endl;
+        return nullptr;
+    }
+
     auto asset = std::make_unique<SpriteAsset>();
     std::vector<std::vector<uint32_t>> atlasFrames;
     TextAssetParser::PaletteMap palette;
@@ -37,7 +44,7 @@ std::unique_ptr<SpriteAsset> SpriteAssetLoader::loadFromFile(SDL_Renderer* rende
 
         if (key == "SPRITE_NAME") ss >> asset->assetId;
         else if (key == "SPRITE_SIZE") ss >> asset->width >> asset->height;
-        else if (key == "PALETTE_BEGIN") palette = TextAssetParser::parsePalette(file);
+        else if (key == "PALETTE_BEGIN") palette = TextAssetParser::parsePalette(file, pixelFormat);
         else if (key == "TEXTURE_ATLAS_BEGIN") currentSection = ParseSection::TextureAtlas;
         else if (key == "TEXTURE_ATLAS_END") currentSection = ParseSection::None;
         else if (key == "ANIMATION_BEGIN") {
@@ -62,6 +69,8 @@ std::unique_ptr<SpriteAsset> SpriteAssetLoader::loadFromFile(SDL_Renderer* rende
             asset->animations[entt::hashed_string{animName.c_str()}] = sequence;
         }
     }
+
+    SDL_FreeFormat(pixelFormat);
 
     if (asset->assetId.empty() || asset->width == 0 || asset->height == 0 || atlasFrames.empty()) {
         std::cerr << "Invalid or empty sprite file: " << filepath << std::endl;

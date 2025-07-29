@@ -10,7 +10,7 @@ PALETTE_BEGIN
 1 24 20 37 255 # Blackish Player outline
 2 38 43 68 255 # Shaded tunic part
 3 58 68 102 255 # Illuminated tunic part
-4 40 153 219255 # Main Accent
+4 40 153 219 255 # Main Accent
 PALETTE_END
 
 # The TEXTURE_ATLAS contains all unique frames for this sprite.

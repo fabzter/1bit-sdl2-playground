@@ -1,10 +1,9 @@
 #pragma once
 
-#include <string>
 #include <vector>
 #include <unordered_map>
 #include <fstream>
-#include <cstdint>
+#include <SDL2/SDL_pixels.h>
 
 /**
  * @class TextAssetParser
@@ -19,9 +18,10 @@ public:
     /**
      * @brief Parses a PALETTE_BEGIN/PALETTE_END block from the file stream.
      * @param file The active input file stream.
+     * @param format
      * @return A map containing the parsed palette data.
      */
-    static PaletteMap parsePalette(std::ifstream& file);
+    static PaletteMap parsePalette(std::ifstream& file, const SDL_PixelFormat* format);
 
     /**
      * @brief Parses a block of pixel data from the file stream until a frame delimiter is found.

@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 
-TextAssetParser::PaletteMap TextAssetParser::parsePalette(std::ifstream& file) {
+TextAssetParser::PaletteMap TextAssetParser::parsePalette(std::ifstream& file, const SDL_PixelFormat* format) {
     PaletteMap palette;
     std::string line;
     while(std::getline(file, line) && line.find("PALETTE_END") == std::string::npos) {
@@ -12,10 +12,11 @@ TextAssetParser::PaletteMap TextAssetParser::parsePalette(std::ifstream& file) {
         char index_char;
         int r, g, b, a;
         if (pss >> index_char >> r >> g >> b >> a) {
-            uint32_t color = (static_cast<uint32_t>(a) << 24) |
-                             (static_cast<uint32_t>(b) << 16) |
-                             (static_cast<uint32_t>(g) << 8)  |
-                              static_cast<uint32_t>(r);
+            uint32_t color = SDL_MapRGBA(format,
+                                         static_cast<Uint8>(r),
+                                         static_cast<Uint8>(g),
+                                         static_cast<Uint8>(b),
+                                         static_cast<Uint8>(a));
             palette[index_char] = color;
         }
     }

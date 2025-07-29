@@ -17,6 +17,13 @@ std::unique_ptr<TilesetAsset> TilesetAssetLoader::loadFromFile(SDL_Renderer* ren
     std::vector<std::vector<uint32_t>> tilePixelData;
     TextAssetParser::PaletteMap palette;
 
+    //get the pixel format
+    SDL_PixelFormat* pixelFormat = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+    if (!pixelFormat) {
+        std::cerr << "Failed to allocate pixel format for tileset: " << SDL_GetError() << std::endl;
+        return nullptr;
+    }
+
     std::string line;
     enum class ParseSection { None, Tiles } currentSection = ParseSection::None;
 
@@ -40,10 +47,12 @@ std::unique_ptr<TilesetAsset> TilesetAssetLoader::loadFromFile(SDL_Renderer* ren
         if (key == "TILESET_NAME") ss >> asset->assetId;
         else if (key == "TILE_SIZE") ss >> asset->tileWidth >> asset->tileHeight;
         else if (key == "COLUMNS") ss >> asset->columns;
-        else if (key == "PALETTE_BEGIN") palette = TextAssetParser::parsePalette(file);
+        else if (key == "PALETTE_BEGIN") palette = TextAssetParser::parsePalette(file, pixelFormat);
         else if (key == "TILES_BEGIN") currentSection = ParseSection::Tiles;
         else if (key == "TILES_END") currentSection = ParseSection::None;
     }
+
+    SDL_FreeFormat(pixelFormat);
 
     if (asset->tileWidth == 0 || asset->tileHeight == 0 || tilePixelData.empty() || asset->columns == 0) {
         std::cerr << "Invalid or empty tileset file: " << filepath << std::endl;
