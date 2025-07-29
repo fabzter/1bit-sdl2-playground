@@ -112,6 +112,7 @@ void CollisionSystem::update(entt::registry& registry, InputManager&, ResourceMa
 
                 // --- RESOLUTION LOGIC ---
                 // Only perform physical depenetration if NEITHER object is a trigger.
+                //TODO: WHY?
                 if (!collider.is_trigger && !otherCollider.is_trigger) {
                     // Collision detected, now calculate MTV to depenetrate
                     dePenetrate(transform, entityBounds, otherBounds);

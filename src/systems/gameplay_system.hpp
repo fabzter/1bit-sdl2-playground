@@ -10,4 +10,5 @@ public:
 
 private:
     void onCollision(const CollisionEvent& event);
+    entt::registry* m_registry = nullptr;
 };
