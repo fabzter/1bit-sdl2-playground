@@ -21,6 +21,7 @@ private:
     void parseSprite(entt::registry& registry, entt::entity entity, const toml::table& componentData);
     void parsePlayerControl(entt::registry& registry, entt::entity entity);
     void parseMovement(entt::registry& registry, entt::entity entity, const toml::table& componentData);
+    void parseCollider(entt::registry &registry, entt::entity entity, const toml::table &data);
     void parseIntent(entt::registry& registry, entt::entity entity);
     void parseCamera(entt::registry& registry, entt::entity entity);
     void parseTilemap(entt::registry &registry, SDL_Renderer *renderer,

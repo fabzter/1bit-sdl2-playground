@@ -1,10 +1,23 @@
 #include "tmx_loader.hpp"
 #include "../components/tilemap.hpp"
+#include "../components/transform.hpp"
+#include "../components/collider.hpp"
 #include "../util/resource_manager.hpp"
 #include <tmxlite/Map.hpp>
 #include <tmxlite/TileLayer.hpp>
+#include <tmxlite/ObjectGroup.hpp>
 #include <iostream>
 #include <stdexcept>
+#include <sstream>
+
+// A helper to translate layer names to bitmasks.
+// This should probably live in a more central "PhysicsConfig" file later.
+static uint32_t getLayerBitmask(const std::string& name) {
+    if (name == "WORLD") return 1 << 0; // Layer 1
+    if (name == "PLAYER") return 1 << 1; // Layer 2
+    // Add other layers here...
+    return 0;
+}
 
 bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity,
     ResourceManager& resourceManager, const std::string& sourcePath) {
@@ -59,6 +72,44 @@ bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity,
                 currentLayer.tileIds.push_back(tile.ID);
             }
             tilemap.layers.push_back(std::move(currentLayer));
+        }
+
+        // parse object layers
+        else if (layer->getType() == tmx::Layer::Type::Object) {
+            if (layer->getName() == "Collisions") {
+                const auto& objectLayer = layer->getLayerAs<tmx::ObjectGroup>();
+                for (const auto& object : objectLayer.getObjects()) {
+                    // Create a new entity for each collision object
+                    const auto entity = registry.create();
+
+                    // Add a TransformComponent based on the object's position and size
+                    const auto& aabb = object.getAABB();
+                    registry.emplace<TransformComponent>(entity,
+                        Vec2f{aabb.left + aabb.width / 2.f, aabb.top + aabb.height / 2.f}, // Position is center
+                        Vec2f{1.f, 1.f}
+                    );
+
+                    // Add a ColliderComponent
+                    auto& collider = registry.emplace<ColliderComponent>(entity);
+                    collider.size = {aabb.width, aabb.height};
+                    collider.is_static = true;
+
+                    uint32_t final_mask = 0;
+                    for (const auto& prop : object.getProperties()) {
+                        if (prop.getName() == "collisionLayerName") {
+                            collider.layer = getLayerBitmask(prop.getStringValue());
+                        } else if (prop.getName() == "collisionMaskNames") {
+                            std::string maskStr = prop.getStringValue();
+                            std::stringstream ss(maskStr);
+                            std::string name;
+                            while(std::getline(ss, name, ',')) {
+                                final_mask |= getLayerBitmask(name);
+                            }
+                        }
+                    }
+                    collider.mask = final_mask;
+                }
+            }
         }
     }
     std::cout << "TmxLoader: Successfully loaded map '" << sourcePath << "'" << std::endl;

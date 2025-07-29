@@ -8,8 +8,19 @@ name = "World"
 name = "Player"
 
   [entities.components.Transform]
-  position = [640.0, 360.0]
+  position = [80.0, 64.0]
   scale = [2.0, 2.0]
+
+  [entities.components.RigidBody] # This component marks the entity for processing by the physics and collision systems.
+  # Tag component for now, data like mass will be added later.
+
+  [entities.components.Collider]
+  size = [16.0, 16.0]  # The size of the collision box in local sprite units.
+  offset = [0.0, 0.0]  # An offset from the transform's position.
+  layer = 2            # The player is on the "PLAYER" layer (2^1).
+  mask = 1             # The player collides with the "WORLD" layer (2^0).
+  is_static = false
+  is_trigger = false
 
   [entities.components.Sprite]
   assetId = "player"

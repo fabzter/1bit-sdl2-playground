@@ -121,12 +121,17 @@ void RenderSystem::draw(SDL_Renderer* renderer, entt::registry& registry,
             sprite.height                       // height of one frame
         };
 
+        const float scaledWidth = static_cast<float>(sprite.width) * transform.scale.x;
+        const float scaledHeight = static_cast<float>(sprite.height) * transform.scale.y;
+
         // Use component data to define where and how to draw the sprite
+        // To draw a sprite centered on the transform's position, we must
+        // offset the top-left drawing corner by half of the sprite's scaled size.
         const SDL_FRect destRect = {
-            transform.position.x - cameraOffsetX, // Apply camera offset
-            transform.position.y - cameraOffsetY, // Apply camera offset
-            static_cast<float>(sprite.width) * transform.scale.x,
-            static_cast<float>(sprite.height) * transform.scale.y
+            transform.position.x - (scaledWidth / 2.0f) - cameraOffsetX,
+            transform.position.y - (scaledHeight / 2.0f) - cameraOffsetY,
+            scaledWidth,
+            scaledHeight
         };
 
         SDL_SetTextureColorMod(texture, sprite.color.r, sprite.color.g, sprite.color.b);

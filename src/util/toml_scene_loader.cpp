@@ -7,7 +7,8 @@
 #include "../components/movement.hpp"
 #include "../components/camera.hpp"
 #include "../components/blackboard.hpp"
-#include "../components/tilemap.hpp"
+#include "../components/rigidbody.hpp"
+#include "../components/collider.hpp"
 #include "../core/context.hpp"
 #include "../core/blackboard_keys.hpp"
 #include <iostream>
@@ -97,6 +98,8 @@ bool TomlSceneLoader::load(entt::registry& registry,
                             else if (compName == "PlayerControl") parsePlayerControl(registry, newEntity);
                             else if (compName == "Intent") parseIntent(registry, newEntity);
                             else if (compName == "Movement") parseMovement(registry, newEntity, *compData.as_table());
+                            else if (compName == "RigidBody") registry.emplace<RigidBodyComponent>(newEntity);
+                            else if (compName == "Collider") parseCollider(registry, newEntity, *compData.as_table());
                             else if (compName == "Camera") parseCamera(registry, newEntity);
                             else if (compName == "Tilemap") parseTilemap(registry, renderer, resourceManager, newEntity, compData);
                             // NOTE: We skip the Blackboard in Pass 1 because it might contain entity references.
@@ -190,6 +193,20 @@ void TomlSceneLoader::parseIntent(entt::registry& registry, entt::entity entity)
 void TomlSceneLoader::parseMovement(entt::registry& registry, entt::entity entity, const toml::table& data) {
     auto speed = data["speed"].value_or(0.0f);
     registry.emplace<MovementComponent>(entity, speed);
+}
+
+void TomlSceneLoader::parseCollider(entt::registry& registry, entt::entity entity, const toml::table& data) {
+    auto& collider = registry.emplace<ColliderComponent>(entity);
+    if (auto size = data["size"].as_array()) {
+        collider.size = {size->get(0)->value_or(0.0f), size->get(1)->value_or(0.0f)};
+    }
+    if (auto offset = data["offset"].as_array()) {
+        collider.offset = {offset->get(0)->value_or(0.0f), offset->get(1)->value_or(0.0f)};
+    }
+    collider.layer = data["layer"].value_or<uint32_t>(0);
+    collider.mask = data["mask"].value_or<uint32_t>(0);
+    collider.is_static = data["is_static"].value_or(false);
+    collider.is_trigger = data["is_trigger"].value_or(false);
 }
 
 void TomlSceneLoader::parseCamera(entt::registry& registry, entt::entity entity) {
