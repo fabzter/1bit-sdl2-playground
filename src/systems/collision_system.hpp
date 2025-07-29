@@ -2,6 +2,7 @@
 
 #include "../core/systems/isystem.hpp"
 #include "../util/quadtree.hpp"
+#include "../components/transform.hpp"
 #include <memory>
 #include <entt/entt.hpp>
 
@@ -14,4 +15,8 @@ public:
 
 private:
     std::unique_ptr<Quadtree<entt::entity>> m_quadtree;
+
+    void dePenetrate(entt::basic_sigh_mixin<entt::basic_storage<TransformComponent>,
+        entt::basic_registry<>>::value_type &transform,
+        QuadtreeRect entityBounds, const QuadtreeRect otherBounds);
 };

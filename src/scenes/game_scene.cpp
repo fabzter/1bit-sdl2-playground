@@ -28,6 +28,9 @@ void GameScene::load(SDL_Renderer* renderer, ResourceManager* resourceManager,
     m_inputManager = inputManager;
 
     std::cout << "GameScene loading..." << std::endl;
+    // Create the event dispatcher and place it in the registry's context for any system to access.
+    m_registry.ctx().emplace<entt::dispatcher>();
+
     // Use the loader to populate the registry!
     m_sceneLoader->load(m_registry, renderer, m_resourceManager, m_sceneFilePath);
 

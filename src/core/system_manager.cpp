@@ -21,6 +21,9 @@ void SystemManager::updateAll(entt::registry& registry, InputManager& inputManag
     for (auto& system : m_updateSystems) {
         system->update(registry, inputManager, resourceManager, deltaTime);
     }
+
+    // Process all enqueued events and notify listeners.
+    registry.ctx().get<entt::dispatcher>().update();
 }
 
 void SystemManager::drawAll(SDL_Renderer* renderer, entt::registry& registry, ResourceManager& resourceManager) {
