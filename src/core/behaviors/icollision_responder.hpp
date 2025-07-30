@@ -23,6 +23,11 @@ class ICollisionResponder {
 public:
     virtual ~ICollisionResponder() = default;
 
-    // The function that gets called when a collision occurs.
+    /**
+     * @brief The function that gets called when a collision occurs.
+     * @param self The entity that owns this behavior component.
+     * @param other The other entity involved in the collision.
+     * @param registry The scene's entity registry.
+     */
     virtual void onCollision(entt::entity self, entt::entity other, entt::registry& registry) = 0;
 };

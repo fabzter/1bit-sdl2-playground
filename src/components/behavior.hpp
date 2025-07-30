@@ -24,6 +24,7 @@
  */
 //TODO: discuss if this is the right name for the component given it's responsability
 struct BehaviorComponent {
+    // This unique_ptr can hold any class that implements the ICollisionResponder interface.
     // This can hold any kind of collision response, C++ or scripted.
     std::unique_ptr<ICollisionResponder> responder;
 };

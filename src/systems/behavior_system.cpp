@@ -19,9 +19,12 @@ void BehaviorSystem::onCollision(const CollisionEvent& event) {
     }
 
     // Check if the second entity has a behavior to execute.
-    if (auto* behavior = registry.try_get<BehaviorComponent>(event.b)) {
-        if (behavior->responder) {
-            behavior->responder->onCollision(event.b, event.a, registry);
+    // Important: check registry is still valid, as the first behavior might have destroyed it.
+    if (registry.valid(event.b)) {
+        if (auto* behavior = registry.try_get<BehaviorComponent>(event.b)) {
+            if (behavior->responder) {
+                behavior->responder->onCollision(event.b, event.a, registry);
+            }
         }
     }
 }

@@ -7,12 +7,13 @@
 #include "../systems/animation_state_system.hpp"
 #include "../systems/animation.hpp"
 #include "../systems/renderer.hpp"
+#include "../systems/debug_render_system.hpp"
 #include "../systems/tilemap_render_system.hpp"
 #include "../systems/camera_system.hpp"
 #include "../systems/debug_info_system.hpp"
 #include "../systems/collision_system.hpp"
 #include "../systems/physics_system.hpp"
-#include "../systems/gameplay_system.hpp"
+#include "../systems/behavior_system.hpp"
 
 int main(int argc, char* argv[]) {
     Engine engine;
@@ -34,9 +35,10 @@ int main(int argc, char* argv[]) {
     // ---- THE CORRECT PHYSICS LOOP ORDER ----
     systemManager->addUpdateSystem(std::make_unique<PlayerIntentSystem>());
     systemManager->addUpdateSystem(std::make_unique<TopDownMovementSystem>());
-    systemManager->addUpdateSystem(std::make_unique<CollisionSystem>(worldBounds));
-    systemManager->addUpdateSystem(std::make_unique<GameplaySystem>());
     systemManager->addUpdateSystem(std::make_unique<PhysicsSystem>());
+    systemManager->addUpdateSystem(std::make_unique<CollisionSystem>(worldBounds));
+    // systemManager->addUpdateSystem(std::make_unique<GameplaySystem>());
+    systemManager->addUpdateSystem(std::make_unique<BehaviorSystem>());
     // ------------------------------------------
     systemManager->addUpdateSystem(std::make_unique<AnimationStateSystem>());
     systemManager->addUpdateSystem(std::make_unique<AnimationSystem>());
@@ -46,6 +48,7 @@ int main(int argc, char* argv[]) {
     // The order we add render systems determines the draw order (background first)
     systemManager->addRenderSystem(std::make_unique<TilemapRenderSystem>());
     systemManager->addRenderSystem(std::make_unique<RenderSystem>());
+    systemManager->addRenderSystem(std::make_unique<DebugRenderSystem>());
 
     // 3. Inject the configured manager into the scene.
     gameScene->setSystemManager(std::move(systemManager));

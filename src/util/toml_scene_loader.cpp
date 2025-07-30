@@ -9,6 +9,9 @@
 #include "../components/blackboard.hpp"
 #include "../components/rigidbody.hpp"
 #include "../components/collider.hpp"
+#include "../components/behavior.hpp"
+#include "../components/tag.hpp"
+#include "../core/behaviors/collectible_behavior.hpp"
 #include "../core/context.hpp"
 #include "../core/blackboard_keys.hpp"
 #include <iostream>
@@ -90,7 +93,7 @@ bool TomlSceneLoader::load(entt::registry& registry,
 
                     const auto newEntity = registry.create();
                     nameToEntityMap[entityName] = newEntity;
-
+                    registry.emplace<TagComponent>(newEntity, entityName);
                     if (auto components = entityData->get("components")->as_table()) {
                         for (auto& [compName, compData] : *components) {
                             if (compName == "Transform") parseTransform(registry, newEntity, *compData.as_table());
@@ -102,6 +105,7 @@ bool TomlSceneLoader::load(entt::registry& registry,
                             else if (compName == "Collider") parseCollider(registry, newEntity, *compData.as_table());
                             else if (compName == "Camera") parseCamera(registry, newEntity);
                             else if (compName == "Tilemap") parseTilemap(registry, renderer, resourceManager, newEntity, compData);
+                            else if (compName == "Behavior") parseBehavior(registry, newEntity, *compData.as_table());
                             // NOTE: We skip the Blackboard in Pass 1 because it might contain entity references.
                         }
                     }
@@ -211,6 +215,17 @@ void TomlSceneLoader::parseCollider(entt::registry& registry, entt::entity entit
 
 void TomlSceneLoader::parseCamera(entt::registry& registry, entt::entity entity) {
     registry.emplace<CameraComponent>(entity);
+}
+
+void TomlSceneLoader::parseBehavior(entt::registry& registry, entt::entity entity, const toml::table& data) {
+    auto type = data["type"].value_or<std::string>("");
+    auto& behavior = registry.emplace<BehaviorComponent>(entity);
+
+    if (type == "collectible") {
+        behavior.responder = std::make_unique<CollectibleBehavior>();
+    }
+    //TODO: maybe there shoulf be other way to handle behaviors in other to avoid this function to be a gigantic if else block
+    // else if (type == "another_behavior") { ... }
 }
 
 void TomlSceneLoader::parseBlackboard(entt::registry& registry, entt::entity entity, const toml::table& data,

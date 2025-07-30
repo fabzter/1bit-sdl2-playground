@@ -9,6 +9,10 @@ class DebugInfoSystem: public IUpdateSystem {
 public:
     DebugInfoSystem() = default;
 
+    void dumpEntityColliderData(entt::registry &registry);
+
+    void dumpTilemapComponentState(entt::registry &registry, ResourceManager &resourceManager);
+
     void update(entt::registry& registry, InputManager& inputManager,
-        ResourceManager& resourceManager, float deltaTime) override;
+                ResourceManager& resourceManager, float deltaTime) override;
 };

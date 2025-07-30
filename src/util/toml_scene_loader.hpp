@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../core/scene_loader.hpp"
+#include "../components/behavior.hpp"
 #include <toml++/toml.h>
 #include <string>
 #include <unordered_map>
@@ -27,6 +28,7 @@ private:
     void parseTilemap(entt::registry &registry, SDL_Renderer *renderer,
         ResourceManager *resourceManager, const entt::registry::entity_type newEntity,
         toml::impl::table_proxy_pair<false>::value_type &compData);
+    void parseBehavior(entt::registry& registry, entt::entity entity, const toml::table& componentData);
 
     // Helpers for the blackboard, which can contain many types
     void parseBlackboard(entt::registry& registry, entt::entity entity, const toml::table& componentData,
