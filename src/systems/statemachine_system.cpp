@@ -17,7 +17,8 @@ void StateMachineSystem::update(entt::registry& registry, InputManager&, Resourc
         if (auto it = blackboard.values.find(BlackboardKeys::State::IsMoving); it != blackboard.values.end()) {
             isMoving = std::any_cast<bool>(it->second);
         }
-        
+
+        //TODO: should the sistem itself now about the states themselves? in a stat machine a state is justa node and then we have an event that transitions them.
         entt::hashed_string newStateKey = isMoving ? "walk"_hs : "idle"_hs;
 
         if (newStateKey != stateMachine.currentState) {

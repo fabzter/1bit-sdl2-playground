@@ -4,7 +4,7 @@
 #include "../util/toml_scene_loader.hpp"
 #include "../systems/player_intent_system.hpp"
 #include "../systems/top_down_kinematic_movement_system.hpp"
-#include "../systems/animation_state_system.hpp"
+#include "../systems/statemachine_system.hpp"
 #include "../systems/animation.hpp"
 #include "../systems/renderer.hpp"
 #include "../systems/debug_render_system.hpp"
@@ -31,16 +31,16 @@ int main(int argc, char* argv[]) {
     auto systemManager = std::make_unique<SystemManager>();
     // Define the world boundaries for the Quadtree.
     // For now, we'll hardcode it. Later, this could come from the scene file.
+    //TODO: this data must come frome the scene file or at least the map file. MAy from both! This is a discuccion topic.
     QuadtreeRect worldBounds = {0, 0, 1280, 720};
     // ---- THE CORRECT PHYSICS LOOP ORDER ----
     systemManager->addUpdateSystem(std::make_unique<PlayerIntentSystem>());
     systemManager->addUpdateSystem(std::make_unique<TopDownKinematicMovementSystem>());
     systemManager->addUpdateSystem(std::make_unique<PhysicsSystem>());
     systemManager->addUpdateSystem(std::make_unique<CollisionSystem>(worldBounds));
-    // systemManager->addUpdateSystem(std::make_unique<GameplaySystem>());
     systemManager->addUpdateSystem(std::make_unique<BehaviorSystem>());
     // ------------------------------------------
-    systemManager->addUpdateSystem(std::make_unique<AnimationStateSystem>());
+    systemManager->addUpdateSystem(std::make_unique<StateMachineSystem>());
     systemManager->addUpdateSystem(std::make_unique<AnimationSystem>());
     systemManager->addUpdateSystem(std::make_unique<CameraSystem>());
     systemManager->addUpdateSystem(std::make_unique<DebugInfoSystem>());
