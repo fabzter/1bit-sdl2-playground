@@ -1,7 +1,30 @@
 #include "collision_system.hpp"
+#include "../components/transform.hpp"
 #include "../components/collider.hpp"
-#include "../components/rigidbody.hpp"
 #include "../events/collision.hpp"
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+
+/**
+ * @brief Calculates the Minimum Translation Vector (MTV) to resolve AABB overlap.
+ * @return A Vec2f representing the smallest push to separate the two rectangles.
+ */
+static Vec2f calculateMTV(const QuadtreeRect& a, const QuadtreeRect& b) {
+    float overlapX1 = (a.x + a.w) - b.x;
+    float overlapX2 = (b.x + b.w) - a.x;
+    float overlapY1 = (a.y + a.h) - b.y;
+    float overlapY2 = (b.y + b.h) - a.y;
+
+    float overlapX = std::min(overlapX1, overlapX2);
+    float overlapY = std::min(overlapY1, overlapY2);
+
+    if (overlapX < overlapY) {
+        return { (overlapX1 < overlapX2) ? -overlapX : overlapX, 0.0f };
+    } else {
+        return { 0.0f, (overlapY1 < overlapY2) ? -overlapY : overlapY };
+    }
+}
 
 CollisionSystem::CollisionSystem(const QuadtreeRect& worldBounds) {
     m_quadtree = std::make_unique<Quadtree<entt::entity>>(0, worldBounds);
@@ -18,6 +41,7 @@ static QuadtreeRect getEntityBounds(const TransformComponent& transform, const C
     // 1. Start with the entity's center position.
     // 2. Subtract half the scaled size to find the top-left corner.
     // 3. Add the (now optional) scaled offset for special adjustments.
+    //TODO: where is the 2.0f comming from? seems like a hardcoded data taht may bring problems later
     return {
         static_cast<int>(transform.position.x - (scaledWidth / 2.0f) + scaledOffsetX),
         static_cast<int>(transform.position.y - (scaledHeight / 2.0f) + scaledOffsetY),
@@ -32,31 +56,51 @@ static bool checkAABBCollision(const QuadtreeRect& a, const QuadtreeRect& b) {
             a.y < b.y + b.h && a.y + a.h > b.y);
 }
 
-void CollisionSystem::dePenetrate(entt::basic_sigh_mixin<entt::basic_storage<TransformComponent>, entt::basic_registry<>>::value_type &transform, QuadtreeRect entityBounds, const QuadtreeRect otherBounds) {
-    float overlapX1 = (entityBounds.x + entityBounds.w) - otherBounds.x;
-    float overlapX2 = (otherBounds.x + otherBounds.w) - entityBounds.x;
-    float overlapY1 = (entityBounds.y + entityBounds.h) - otherBounds.y;
-    float overlapY2 = (otherBounds.y + otherBounds.h) - entityBounds.y;
+void CollisionSystem::dePenetatrate(TransformComponent &dynamicTransform, const QuadtreeRect &dynamicBounds, const QuadtreeRect &staticBounds) {
+    Vec2f mtv = calculateMTV(dynamicBounds, staticBounds);
 
-    float overlapX = std::min(overlapX1, overlapX2);
-    float overlapY = std::min(overlapY1, overlapY2);
+    // 2. Apply the entire push to the dynamic object.
+    dynamicTransform.position.x += mtv.x;
+    dynamicTransform.position.y += mtv.y;
+}
 
-    // Depenetrate on the axis with the smallest overlap
-    if (overlapX < overlapY) {
-        // Push on X axis
-        if (overlapX1 < overlapX2) {
-            transform.position.x -= overlapX; // Push left
-        } else {
-            transform.position.x += overlapX; // Push right
-        }
-    } else {
-        // Push on Y axis
-        if (overlapY1 < overlapY2) {
-            transform.position.y -= overlapY; // Push up
-        } else {
-            transform.position.y += overlapY; // Push down
-        }
-    }
+void CollisionSystem::resolveStaticCollision(TransformComponent& dynamicTransform, const QuadtreeRect& dynamicBounds,
+                                             const QuadtreeRect& staticBounds) {
+    dePenetatrate(dynamicTransform, dynamicBounds, staticBounds);
+}
+
+void CollisionSystem::resolveDynamicCollision(
+    TransformComponent& transformA, RigidBodyComponent& rbA, const QuadtreeRect& boundsA,
+    TransformComponent& transformB, RigidBodyComponent& rbB, const QuadtreeRect& boundsB)
+{
+    // --- 1. Positional Correction (Depenetration) ---
+    Vec2f mtv = calculateMTV(boundsA, boundsB);
+
+    float totalMass = rbA.mass + rbB.mass;
+    if (totalMass <= 0) return; // Avoid division by zero if both have zero mass
+
+    // 1b. Distribute the push based on the mass ratio.
+    float pushRatioA = rbB.mass / totalMass;
+    float pushRatioB = rbA.mass / totalMass;
+    transformA.position.x += mtv.x * pushRatioA;
+    transformA.position.y += mtv.y * pushRatioA;
+    transformB.position.x -= mtv.x * pushRatioB;
+    transformB.position.y -= mtv.y * pushRatioB;
+
+    // --- 2. Velocity Correction (Impulse) ---
+    float combinedRestitution = std::min(rbA.restitution, rbB.restitution);
+
+    // X-axis velocity
+    float v1x = rbA.velocity.x;
+    float v2x = rbB.velocity.x;
+    rbA.velocity.x = (v1x * (rbA.mass - rbB.mass) + 2 * rbB.mass * v2x) / totalMass * combinedRestitution;
+    rbB.velocity.x = (v2x * (rbB.mass - rbA.mass) + 2 * rbA.mass * v1x) / totalMass * combinedRestitution;
+
+    // Y-axis velocity
+    float v1y = rbA.velocity.y;
+    float v2y = rbB.velocity.y;
+    rbA.velocity.y = (v1y * (rbA.mass - rbB.mass) + 2 * rbB.mass * v2y) / totalMass * combinedRestitution;
+    rbB.velocity.y = (v2y * (rbB.mass - rbA.mass) + 2 * rbA.mass * v1y) / totalMass * combinedRestitution;
 }
 
 //TODO: while move and depentrate is an extremely common and robust pattern used in countless games, especially for character controllers. Many systems in Godot, Unity, and custom engines use this exact logic for player movement because it elegantly handles sliding along walls and is much simpler to implement reliably than a full CCD system, this is still a work in progress to evaluate, make cleaner and more generic.
@@ -76,14 +120,19 @@ void CollisionSystem::update(entt::registry& registry, InputManager&, ResourceMa
 
     // === 2. NARROW PHASE === (with depenetration)
     // We only need to check moving objects against the quadtree.
-    auto movingCollidersView = registry.view<TransformComponent, const ColliderComponent,
-        const RigidBodyComponent>();
-    for (const auto entity : movingCollidersView) {
-        auto& transform = movingCollidersView.get<TransformComponent>(entity);
-        const auto& collider = movingCollidersView.get<const ColliderComponent>(entity);
+    auto dynamicEntitiesView = registry.view<TransformComponent, RigidBodyComponent,
+    const ColliderComponent>();
+    for (const auto entity : dynamicEntitiesView) {
+        // We only need to check DYNAMIC bodies, as static ones don't initiate collision checks.
+        auto& rigidbody = dynamicEntitiesView.get<RigidBodyComponent>(entity);
+        if (rigidbody.bodyType != BodyType::DYNAMIC) continue;
 
+        // ---(Get potential collisions from Quadtree) ---
+        auto& transform = dynamicEntitiesView.get<TransformComponent>(entity);
+        const auto& collider = dynamicEntitiesView.get<const ColliderComponent>(entity);
+
+        // Get potentials collisions from Quadtree
         QuadtreeRect entityBounds = getEntityBounds(transform, collider);
-        
         std::vector<entt::entity> potentialCollisions;
         m_quadtree->query(entityBounds, potentialCollisions);
         
@@ -93,29 +142,41 @@ void CollisionSystem::update(entt::registry& registry, InputManager&, ResourceMa
                 continue;
             }
 
-            const auto& otherCollider = allCollidersView.get<const ColliderComponent>(otherEntity);
-
+            const auto& otherCollider = registry.get<const ColliderComponent>(otherEntity);
             // Check if the physics layers and masks allow for a collision.
             bool canCollide = (collider.mask & otherCollider.layer) && (otherCollider.mask & collider.layer);
             if (!canCollide) {
                 continue;
             }
 
-            const auto& otherTransform = allCollidersView.get<const TransformComponent>(otherEntity);
-            const auto otherBounds = getEntityBounds(otherTransform, otherCollider);
+            const auto& otherConstTransform = registry.get<const TransformComponent>(otherEntity);
+            const auto otherBounds = getEntityBounds(otherConstTransform, otherCollider);
 
             // TODO: I dont think resolution should go here? since every object should be able to react differently to collisions. Or maybe yes? this is a discussion topic.
             if (checkAABBCollision(entityBounds, otherBounds)) {
-                // --- EVENT DISPATCH LOGIC ---
-                // Always dispatch an event on collision.
+                //TODO: discuss if this component should be responsible for resolution
                 dispatcher.enqueue<CollisionEvent>(entity, otherEntity);
 
-                // --- RESOLUTION LOGIC ---
-                // Only perform physical depenetration if NEITHER object is a trigger.
-                //TODO: WHY?
-                if (!collider.is_trigger && !otherCollider.is_trigger) {
-                    // Collision detected, now calculate MTV to depenetrate
-                    dePenetrate(transform, entityBounds, otherBounds);
+                // Now, check if we should skip the physical resolution part.
+                if (collider.is_trigger || otherCollider.is_trigger) {
+                    continue;
+                }
+
+                //TODO: again im thinking this resolution should not be part of the collission system but for more specialized systems.
+                // Safely try to get the other entity's rigidbody.
+                auto* otherRigidbody = registry.try_get<RigidBodyComponent>(otherEntity);
+                if (otherRigidbody) {
+                    // --- COLLISION RESPONSE ---
+                    if (otherRigidbody->bodyType == BodyType::STATIC) {
+                        resolveStaticCollision(transform, entityBounds, otherBounds);
+                    } else if (otherRigidbody->bodyType == BodyType::DYNAMIC) {
+                        auto& otherMutableTransform = registry.get<TransformComponent>(otherEntity);
+                        resolveDynamicCollision(transform, rigidbody, entityBounds,
+                            otherMutableTransform, *otherRigidbody, otherBounds);
+                    }
+                } else {
+                    // The other entity does NOT have a rigidbody, so treat it as a simple static wall.
+                    resolveStaticCollision(transform, entityBounds, otherBounds);
                 }
             }
         }

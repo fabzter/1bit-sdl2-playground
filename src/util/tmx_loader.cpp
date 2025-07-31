@@ -2,6 +2,7 @@
 #include "../components/tilemap.hpp"
 #include "../components/transform.hpp"
 #include "../components/collider.hpp"
+#include "../components/rigidbody.hpp"
 #include "../util/resource_manager.hpp"
 #include <tmxlite/Map.hpp>
 #include <tmxlite/TileLayer.hpp>
@@ -17,6 +18,13 @@ static uint32_t getLayerBitmask(const std::string& name) {
     if (name == "PLAYER") return 1 << 1; // Layer 2
     // Add other layers here...
     return 0;
+}
+
+// a helper to convert string to BodyType
+static BodyType getBodyTypeFromString(const std::string& type) {
+    if (type == "DYNAMIC") return BodyType::DYNAMIC;
+    if (type == "KINEMATIC") return BodyType::KINEMATIC;
+    return BodyType::STATIC;
 }
 
 bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity,
@@ -94,20 +102,40 @@ bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity,
                     collider.size = {aabb.width, aabb.height};
                     collider.is_static = true;
 
+                    /// -- Parse all properties ---
                     uint32_t final_mask = 0;
+                    bool hasRigidbody = false;
+                    std::string bodyTypeStr = "STATIC"; // Default to static
                     for (const auto& prop : object.getProperties()) {
                         if (prop.getName() == "collisionLayerName") {
                             collider.layer = getLayerBitmask(prop.getStringValue());
                         } else if (prop.getName() == "collisionMaskNames") {
-                            std::string maskStr = prop.getStringValue();
+                            const std::string& maskStr = prop.getStringValue();
                             std::stringstream ss(maskStr);
                             std::string name;
                             while(std::getline(ss, name, ',')) {
                                 final_mask |= getLayerBitmask(name);
                             }
+                        } else if (prop.getName() == "bodyType") {
+                            hasRigidbody = true; // Mark that we need to add the component
+                            bodyTypeStr = prop.getStringValue();
                         }
                     }
                     collider.mask = final_mask;
+
+                    // Conditionally add and configure a RigidBodyComponent
+                    if (hasRigidbody) {
+                        auto& rigidbody = registry.emplace<RigidBodyComponent>(entity);
+                        rigidbody.bodyType = getBodyTypeFromString(bodyTypeStr);
+                        // Now we iterate again to find optional physics properties
+                        for (const auto& prop : object.getProperties()) {
+                            if (prop.getName() == "mass") {
+                                rigidbody.mass = prop.getFloatValue();
+                            } else if (prop.getName() == "restitution") {
+                                rigidbody.restitution = prop.getFloatValue();
+                            }
+                        }
+                    }
                 }
             }
         }

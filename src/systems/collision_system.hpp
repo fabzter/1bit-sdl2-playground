@@ -3,6 +3,7 @@
 #include "../core/systems/isystem.hpp"
 #include "../util/quadtree.hpp"
 #include "../components/transform.hpp"
+#include "../components/rigidbody.hpp"
 #include <memory>
 #include <entt/entt.hpp>
 
@@ -19,4 +20,22 @@ private:
     void dePenetrate(entt::basic_sigh_mixin<entt::basic_storage<TransformComponent>,
         entt::basic_registry<>>::value_type &transform,
         QuadtreeRect entityBounds, const QuadtreeRect otherBounds);
+
+    void dePenetatrate(TransformComponent &dynamicTransform, const QuadtreeRect &dynamicBounds,
+                       const QuadtreeRect &staticBounds);
+
+    /**
+ * @brief Resolves a collision between a dynamic entity and a static entity.
+ * This performs a simple depenetration, pushing the dynamic entity out of the static one.
+ */
+    void resolveStaticCollision(TransformComponent& dynamicTransform, const QuadtreeRect& dynamicBounds,
+        const QuadtreeRect& staticBounds);
+
+    /**
+ * @brief Resolves a collision between two dynamic entities.
+ * This handles both positional depenetration and velocity changes (impulse) based on mass and restitution.
+ */
+    void resolveDynamicCollision(
+        TransformComponent& transformA, RigidBodyComponent& rbA, const QuadtreeRect& boundsA,
+        TransformComponent& transformB, RigidBodyComponent& rbB, const QuadtreeRect& boundsB);
 };
