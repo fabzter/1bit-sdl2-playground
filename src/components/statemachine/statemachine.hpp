@@ -1,9 +1,14 @@
 #pragma once
 
-#include "../core/fsm/istate.hpp"
-#include "../core/entt_helpers.hpp"
+#include "../../core/fsm/istate.hpp"
+#include "../../core/entt_helpers.hpp"
+#include "transition_condition.hpp"
+#include "transition.hpp"
 #include <memory>
 #include <unordered_map>
+#include <vector>
+#include <string>
+#include <entt/entt.hpp>
 
 struct StateMachineComponent {
     // A map of all states available to this FSM, keyed by their name.

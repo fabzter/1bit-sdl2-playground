@@ -11,7 +11,8 @@
 #include "../components/collider.hpp"
 #include "../components/behavior.hpp"
 #include "../components/tag.hpp"
-#include "../components/statemachine.hpp"
+#include "../components/statemachine/statemachine.hpp"
+#include "../components/statemachine/transition_condition.hpp"
 #include "../core/fsm/simple_animation_state.hpp"
 #include "../core/behaviors/collectible_behavior.hpp"
 #include "../core/context.hpp"
@@ -263,6 +264,30 @@ void TomlSceneLoader::parseStateMachine(entt::registry& registry, entt::entity e
             // Later, we can add "else if (type == "blendspace") { ... }"
         }
     }
+
+    if (auto transitionsArr = data["transitions"].as_array()) {
+        for (auto& elem: *transitionsArr) {
+            if (auto* tbl = elem.as_table()) {
+                std::string from_str = tbl->get("from")->value_or<std::string>("");
+                if (from_str.empty()) continue;
+
+                Transition transition;
+                transition.toState = entt::hashed_string{tbl->get("to")->value_or<std::string>("").c_str()};
+
+                if (auto* conditionsArr = tbl->get("conditions")->as_array()) {
+                    for (auto& cond_elem : *conditionsArr) {
+                        if (auto* cond_tbl = cond_elem.as_table()) {
+                            transition.conditions.emplace_back(
+                                cond_tbl->get("key")->value_or<std::string>(""),
+                                cond_tbl->get("value")->value_or(false));
+                        }
+                    }
+                }
+                fsm.transitions[entt::hashed_string{from_str.c_str()}].push_back(transition);
+            }
+        }
+    }
+
     // Set the initial state
     auto initialState = data["initial_state"].value_or<std::string>("idle");
     fsm.currentState = entt::hashed_string{initialState.c_str()};
