@@ -1,4 +1,4 @@
-#include "top_down_kinematic_movement_system.hpp"
+#include "character_controller_systemm.hpp"
 #include "../components/intent.hpp"
 #include "../components/rigidbody.hpp"
 #include "../components/transform.hpp"
@@ -7,7 +7,7 @@
 #include "../core/blackboard_keys.hpp"
 #include <iostream>
 
-void TopDownKinematicMovementSystem::update(entt::registry& registry, InputManager& inputManager,
+void CharacterControllerSystem::update(entt::registry& registry, InputManager& inputManager,
         ResourceManager& resourceManager, float deltaTime) {
     // This system acts on any entity that has an intent and movement stats.
     auto view = registry.view<const IntentComponent, RigidBodyComponent, const MovementComponent, BlackboardComponent>();
@@ -30,6 +30,11 @@ void TopDownKinematicMovementSystem::update(entt::registry& registry, InputManag
             // For now, a large number ensures it feels responsive.
             rigidbody.force.x += movement.speed * 10.0f * intent.moveDirection.x;
             rigidbody.force.y += movement.speed * 10.0f * intent.moveDirection.y;
+        }
+
+        // We can also move the Blackboard update here.
+        if (auto* blackboard = registry.try_get<BlackboardComponent>(entity)) {
+            blackboard->values[BlackboardKeys::State::IsMoving] = (intent.moveDirection.x != 0.0f || intent.moveDirection.y != 0.0f);
         }
     }
 }

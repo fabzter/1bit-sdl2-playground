@@ -2,9 +2,9 @@
 
 #include "../core/systems/isystem.hpp"
 
-class TopDownKinematicMovementSystem: public IUpdateSystem {
+class CharacterControllerSystem: public IUpdateSystem {
 public:
-    TopDownKinematicMovementSystem() = default;
+    CharacterControllerSystem() = default;
 
     void update(entt::registry& registry, InputManager& inputManager,
         ResourceManager& resourceManager, float deltaTime) override;
