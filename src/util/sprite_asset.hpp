@@ -5,16 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <SDL2/SDL.h>
-#include <entt/entt.hpp>
-
-// This is a template specialization that teaches std::hash how to work with entt::hashed_string.
-// It's required for using hashed_string as a key in std::unordered_map.
-template <>
-struct std::hash<entt::hashed_string> {
-    std::size_t operator()(const entt::hashed_string& hs) const {
-        return hs.value();
-    }
-};
+#include "../core/entt_helpers.hpp"
 
 // Forward-declare the custom deleter
 struct SDL_Texture_Deleter {

@@ -11,6 +11,8 @@
 #include "../components/collider.hpp"
 #include "../components/behavior.hpp"
 #include "../components/tag.hpp"
+#include "../components/statemachine.hpp"
+#include "../core/fsm/simple_animation_state.hpp"
 #include "../core/behaviors/collectible_behavior.hpp"
 #include "../core/context.hpp"
 #include "../core/blackboard_keys.hpp"
@@ -106,6 +108,7 @@ bool TomlSceneLoader::load(entt::registry& registry,
                             else if (compName == "Camera") parseCamera(registry, newEntity);
                             else if (compName == "Tilemap") parseTilemap(registry, renderer, resourceManager, newEntity, compData);
                             else if (compName == "Behavior") parseBehavior(registry, newEntity, *compData.as_table());
+                            else if (compName == "StateMachine") parseStateMachine(registry, newEntity, *compData.as_table());
                             // NOTE: We skip the Blackboard in Pass 1 because it might contain entity references.
                         }
                     }
@@ -238,6 +241,37 @@ void TomlSceneLoader::parseRigidBody(entt::registry& registry, entt::entity enti
     rigidbody.mass = data["mass"].value_or(1.0f);
     rigidbody.restitution = data["restitution"].value_or(0.5f);
     rigidbody.damping = data["damping"].value_or(0.98f);
+}
+
+void TomlSceneLoader::parseStateMachine(entt::registry& registry, entt::entity entity,
+    const toml::table& data) {
+    auto& fsm = registry.emplace<StateMachineComponent>(entity);
+
+    if (auto states = data["states"].as_table()) {
+        for (auto& [name, node] : *states) {
+            if (auto* stateData = node.as_table()) {
+                auto type = stateData->get("type")->value_or<std::string>("");
+
+                if (type == "simple") {
+                    auto anim = stateData->get("animation")->value_or<std::string>("");
+
+                    std::string stateNameStr = std::string(name.str());
+                    fsm.states[entt::hashed_string{stateNameStr.c_str()}] =
+                        std::make_unique<SimpleAnimationState>(entt::hashed_string{anim.c_str()});
+                }
+            }
+            // Later, we can add "else if (type == "blendspace") { ... }"
+        }
+    }
+    // Set the initial state
+    auto initialState = data["initial_state"].value_or<std::string>("idle");
+    fsm.currentState = entt::hashed_string{initialState.c_str()};
+
+    // --- Immediately call onEnter for the initial state ---
+    // This ensures the entity starts with the correct animation.
+    if (auto it = fsm.states.find(fsm.currentState); it != fsm.states.end()) {
+        it->second->onEnter(entity, registry);
+    }
 }
 
 void TomlSceneLoader::parseBlackboard(entt::registry& registry, entt::entity entity, const toml::table& data,

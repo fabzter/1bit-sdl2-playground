@@ -3,9 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <SDL2/SDL.h>
-#include <entt/entt.hpp>
-
-using namespace entt::literals;
+#include "../core/entt_helpers.hpp"
 
 /**
  * @struct SpriteComponent
