@@ -1,43 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="10" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="5">
- <tileset firstgid="1" name="ground" tilewidth="16" tileheight="16" tilecount="2" columns="2">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="10" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="9">
+ <tileset firstgid="1" name="ground" tilewidth="16" tileheight="16" tilecount="0" columns="2">
   <image source="ground.tileset" width="32" height="16"/>
  </tileset>
- <layer id="1" name="GroundLayer" width="10" height="8">
+ <layer id="1" name="GroundLayer" width="19" height="8">
   <data encoding="csv">
-2,2,2,2,2,2,2,2,2,2,
-2,1,1,1,1,1,1,1,1,2,
-2,1,1,1,1,1,1,1,1,2,
-2,1,1,1,1,1,1,1,1,2,
-2,1,1,1,1,1,1,1,1,2,
-2,1,1,1,1,1,1,1,1,2,
-2,1,1,1,1,1,1,1,1,2,
-2,2,2,2,2,2,2,2,2,2
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+2,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 </data>
  </layer>
  <objectgroup id="2" name="Collisions">
   <object id="1" x="0" y="0" width="160" height="16">
    <properties>
-    <property name="collisionLayerName" type="string" value="WORLD"/>
-    <property name="collisionMaskNames" type="string" value="PLAYER"/>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
    </properties>
   </object>
   <object id="2" x="0" y="112" width="160" height="16">
    <properties>
-    <property name="collisionLayerName" type="string" value="WORLD"/>
-    <property name="collisionMaskNames" type="string" value="PLAYER"/>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
    </properties>
   </object>
   <object id="3" x="0" y="16" width="16" height="96">
    <properties>
-    <property name="collisionLayerName" type="string" value="WORLD"/>
-    <property name="collisionMaskNames" type="string" value="PLAYER"/>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
    </properties>
   </object>
-  <object id="4" x="144" y="16" width="16" height="96">
+  <object id="4" x="144" y="16" width="16" height="32">
    <properties>
-    <property name="collisionLayerName" type="string" value="WORLD"/>
-    <property name="collisionMaskNames" type="string" value="PLAYER"/>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
+   </properties>
+  </object>
+  <object id="5" x="144" y="80" width="16" height="32">
+   <properties>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
+   </properties>
+  </object>
+  <object id="6" x="160" y="0" width="144" height="16">
+   <properties>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
+   </properties>
+  </object>
+  <object id="7" x="160" y="111.855" width="144" height="16">
+   <properties>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
+   </properties>
+  </object>
+  <object id="8" x="287.523" y="16" width="16" height="96">
+   <properties>
+    <property name="collisionLayerName" value="WORLD"/>
+    <property name="collisionMaskNames" value="PLAYER"/>
    </properties>
   </object>
  </objectgroup>
