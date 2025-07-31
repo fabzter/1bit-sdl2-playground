@@ -29,7 +29,7 @@ private:
         ResourceManager *resourceManager, const entt::registry::entity_type newEntity,
         toml::impl::table_proxy_pair<false>::value_type &compData);
     void parseBehavior(entt::registry& registry, entt::entity entity, const toml::table& componentData);
-
+    void parseRigidBody(entt::registry &registry, entt::entity entity, const toml::table &data);
     // Helpers for the blackboard, which can contain many types
     void parseBlackboard(entt::registry& registry, entt::entity entity, const toml::table& componentData,
                          const std::unordered_map<std::string, entt::entity>& nameToEntityMap);

@@ -2,9 +2,9 @@
 
 #include "../core/systems/isystem.hpp"
 
-class TopDownMovementSystem: public IUpdateSystem {
+class TopDownKinematicMovementSystem: public IUpdateSystem {
 public:
-    TopDownMovementSystem() = default;
+    TopDownKinematicMovementSystem() = default;
 
     void update(entt::registry& registry, InputManager& inputManager,
         ResourceManager& resourceManager, float deltaTime) override;

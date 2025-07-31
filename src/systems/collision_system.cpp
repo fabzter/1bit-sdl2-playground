@@ -89,18 +89,27 @@ void CollisionSystem::resolveDynamicCollision(
 
     // --- 2. Velocity Correction (Impulse) ---
     float combinedRestitution = std::min(rbA.restitution, rbB.restitution);
+    Vec2f relativeVelocity = {rbB.velocity.x - rbA.velocity.x, rbB.velocity.y - rbA.velocity.y};
+    Vec2f normal = {mtv.x, mtv.y};
+    // Normalize the normal vector
+    float length = std::sqrt(normal.x * normal.x + normal.y * normal.y);
+    if (length > 0) {
+        normal.x /= length;
+        normal.y /= length;
+    }
 
-    // X-axis velocity
-    float v1x = rbA.velocity.x;
-    float v2x = rbB.velocity.x;
-    rbA.velocity.x = (v1x * (rbA.mass - rbB.mass) + 2 * rbB.mass * v2x) / totalMass * combinedRestitution;
-    rbB.velocity.x = (v2x * (rbB.mass - rbA.mass) + 2 * rbA.mass * v1x) / totalMass * combinedRestitution;
+    float velAlongNormal = relativeVelocity.x * normal.x + relativeVelocity.y * normal.y;
+    if (velAlongNormal > 0) return; // Objects are already moving apart
 
-    // Y-axis velocity
-    float v1y = rbA.velocity.y;
-    float v2y = rbB.velocity.y;
-    rbA.velocity.y = (v1y * (rbA.mass - rbB.mass) + 2 * rbB.mass * v2y) / totalMass * combinedRestitution;
-    rbB.velocity.y = (v2y * (rbB.mass - rbA.mass) + 2 * rbA.mass * v1y) / totalMass * combinedRestitution;
+    float impulseScalar = -(1 + combinedRestitution) * velAlongNormal;
+    impulseScalar /= (1 / rbA.mass + 1 / rbB.mass);
+
+    Vec2f impulse = {impulseScalar * normal.x, impulseScalar * normal.y};
+
+    rbA.velocity.x -= (1 / rbA.mass) * impulse.x;
+    rbA.velocity.y -= (1 / rbA.mass) * impulse.y;
+    rbB.velocity.x += (1 / rbB.mass) * impulse.x;
+    rbB.velocity.y += (1 / rbB.mass) * impulse.y;
 }
 
 //TODO: while move and depentrate is an extremely common and robust pattern used in countless games, especially for character controllers. Many systems in Godot, Unity, and custom engines use this exact logic for player movement because it elegantly handles sliding along walls and is much simpler to implement reliably than a full CCD system, this is still a work in progress to evaluate, make cleaner and more generic.
@@ -125,7 +134,7 @@ void CollisionSystem::update(entt::registry& registry, InputManager&, ResourceMa
     for (const auto entity : dynamicEntitiesView) {
         // We only need to check DYNAMIC bodies, as static ones don't initiate collision checks.
         auto& rigidbody = dynamicEntitiesView.get<RigidBodyComponent>(entity);
-        if (rigidbody.bodyType != BodyType::DYNAMIC) continue;
+        if (rigidbody.bodyType == BodyType::STATIC) continue;
 
         // ---(Get potential collisions from Quadtree) ---
         auto& transform = dynamicEntitiesView.get<TransformComponent>(entity);
@@ -167,9 +176,11 @@ void CollisionSystem::update(entt::registry& registry, InputManager&, ResourceMa
                 auto* otherRigidbody = registry.try_get<RigidBodyComponent>(otherEntity);
                 if (otherRigidbody) {
                     // --- COLLISION RESPONSE ---
-                    if (otherRigidbody->bodyType == BodyType::STATIC) {
+                    // If the other body is STATIC OR KINEMATIC, treat it as an immovable wall.
+                    if (otherRigidbody->bodyType == BodyType::STATIC ||
+                        otherRigidbody->bodyType == BodyType::KINEMATIC) {
                         resolveStaticCollision(transform, entityBounds, otherBounds);
-                    } else if (otherRigidbody->bodyType == BodyType::DYNAMIC) {
+                    } else if (otherRigidbody->bodyType == BodyType::DYNAMIC) { // Both bodies are DYNAMIC.
                         auto& otherMutableTransform = registry.get<TransformComponent>(otherEntity);
                         resolveDynamicCollision(transform, rigidbody, entityBounds,
                             otherMutableTransform, *otherRigidbody, otherBounds);

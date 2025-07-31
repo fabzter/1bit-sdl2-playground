@@ -15,6 +15,7 @@ enum class BodyType {
  */
 struct RigidBodyComponent {
     Vec2f velocity{0.0f, 0.0f};
+    Vec2f force{0.0f, 0.0f};
     BodyType bodyType = BodyType::DYNAMIC;
 
     // The mass of the object. A value of 0.0f makes it immovable (effectively infinite mass).
@@ -22,6 +23,8 @@ struct RigidBodyComponent {
 
     // The "bounciness" of the object. 0.0 is no bounce, 1.0 is a perfect bounce.
     float restitution = 0.5f;
+
+    float damping = 0.98f;
     
     // We can add more physics properties here in the future.
     // Vec2f acceleration{0.0f, 0.0f};

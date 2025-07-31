@@ -3,7 +3,7 @@
 #include "../scenes/game_scene.hpp"
 #include "../util/toml_scene_loader.hpp"
 #include "../systems/player_intent_system.hpp"
-#include "../systems/top_down_movement_system.hpp"
+#include "../systems/top_down_kinematic_movement_system.hpp"
 #include "../systems/animation_state_system.hpp"
 #include "../systems/animation.hpp"
 #include "../systems/renderer.hpp"
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     QuadtreeRect worldBounds = {0, 0, 1280, 720};
     // ---- THE CORRECT PHYSICS LOOP ORDER ----
     systemManager->addUpdateSystem(std::make_unique<PlayerIntentSystem>());
-    systemManager->addUpdateSystem(std::make_unique<TopDownMovementSystem>());
+    systemManager->addUpdateSystem(std::make_unique<TopDownKinematicMovementSystem>());
     systemManager->addUpdateSystem(std::make_unique<PhysicsSystem>());
     systemManager->addUpdateSystem(std::make_unique<CollisionSystem>(worldBounds));
     // systemManager->addUpdateSystem(std::make_unique<GameplaySystem>());

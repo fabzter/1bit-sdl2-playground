@@ -101,7 +101,7 @@ bool TomlSceneLoader::load(entt::registry& registry,
                             else if (compName == "PlayerControl") parsePlayerControl(registry, newEntity);
                             else if (compName == "Intent") parseIntent(registry, newEntity);
                             else if (compName == "Movement") parseMovement(registry, newEntity, *compData.as_table());
-                            else if (compName == "RigidBody") registry.emplace<RigidBodyComponent>(newEntity);
+                            else if (compName == "RigidBody") parseRigidBody(registry, newEntity, *compData.as_table());
                             else if (compName == "Collider") parseCollider(registry, newEntity, *compData.as_table());
                             else if (compName == "Camera") parseCamera(registry, newEntity);
                             else if (compName == "Tilemap") parseTilemap(registry, renderer, resourceManager, newEntity, compData);
@@ -226,6 +226,18 @@ void TomlSceneLoader::parseBehavior(entt::registry& registry, entt::entity entit
     }
     //TODO: maybe there shoulf be other way to handle behaviors in other to avoid this function to be a gigantic if else block
     // else if (type == "another_behavior") { ... }
+}
+
+void TomlSceneLoader::parseRigidBody(entt::registry& registry, entt::entity entity, const toml::table& data) {
+    auto& rigidbody = registry.get_or_emplace<RigidBodyComponent>(entity);
+    auto typeStr = data["bodyType"].value_or<std::string>("DYNAMIC");
+    if (typeStr == "STATIC") rigidbody.bodyType = BodyType::STATIC;
+    else if (typeStr == "KINEMATIC") rigidbody.bodyType = BodyType::KINEMATIC;
+    else rigidbody.bodyType = BodyType::DYNAMIC;
+
+    rigidbody.mass = data["mass"].value_or(1.0f);
+    rigidbody.restitution = data["restitution"].value_or(0.5f);
+    rigidbody.damping = data["damping"].value_or(0.98f);
 }
 
 void TomlSceneLoader::parseBlackboard(entt::registry& registry, entt::entity entity, const toml::table& data,
