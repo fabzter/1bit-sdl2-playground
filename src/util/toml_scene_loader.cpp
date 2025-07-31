@@ -279,7 +279,8 @@ void TomlSceneLoader::parseStateMachine(entt::registry& registry, entt::entity e
                         if (auto* cond_tbl = cond_elem.as_table()) {
                             transition.conditions.emplace_back(
                                 cond_tbl->get("key")->value_or<std::string>(""),
-                                cond_tbl->get("value")->value_or(false));
+                                cond_tbl->get("value")->value_or(false)
+                                );
                         }
                     }
                 }

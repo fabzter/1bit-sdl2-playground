@@ -113,11 +113,10 @@ name = "Player"
   [[entities.components.StateMachine.transitions.conditions]]
   key = "isMoving"
   value = false
-# ------------------------------------
 
-
-[entities.components.Blackboard]
+  [entities.components.Blackboard]
   # Empty for now, will be populated by systems
+# ------------------------------------
 
 [[entities]]
 name = "Camera"

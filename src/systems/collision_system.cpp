@@ -56,7 +56,7 @@ static bool checkAABBCollision(const QuadtreeRect& a, const QuadtreeRect& b) {
             a.y < b.y + b.h && a.y + a.h > b.y);
 }
 
-void CollisionSystem::dePenetatrate(TransformComponent &dynamicTransform, const QuadtreeRect &dynamicBounds, const QuadtreeRect &staticBounds) {
+void CollisionSystem::dePenetrate(TransformComponent &dynamicTransform, const QuadtreeRect &dynamicBounds, const QuadtreeRect &staticBounds) {
     Vec2f mtv = calculateMTV(dynamicBounds, staticBounds);
 
     // 2. Apply the entire push to the dynamic object.
@@ -66,7 +66,7 @@ void CollisionSystem::dePenetatrate(TransformComponent &dynamicTransform, const 
 
 void CollisionSystem::resolveStaticCollision(TransformComponent& dynamicTransform, const QuadtreeRect& dynamicBounds,
                                              const QuadtreeRect& staticBounds) {
-    dePenetatrate(dynamicTransform, dynamicBounds, staticBounds);
+    dePenetrate(dynamicTransform, dynamicBounds, staticBounds);
 }
 
 void CollisionSystem::resolveDynamicCollision(

@@ -2,6 +2,9 @@
 #include "../components/statemachine/statemachine.hpp"
 #include "../components/blackboard.hpp"
 #include "../core/blackboard_keys.hpp"
+#include <entt/entt.hpp>
+
+using namespace entt::literals;
 
 //TODO: the state machine component is still too hardcoded. w should create a series of (classes? enums? interfaces?) that allows us to define statemachines more generically for different necessites!
 void StateMachineSystem::update(entt::registry& registry, InputManager&, ResourceManager&, float deltaTime) {
@@ -14,8 +17,8 @@ void StateMachineSystem::update(entt::registry& registry, InputManager&, Resourc
         // --- 1. Check for a valid transition ---
         entt::hashed_string nextStateKey{""_hs};
 
-        // Find the list of possible transitions from the current state.
-        if (auto it = fsm.states.find(fsm.currentState); it != fsm.states.end()) {
+        // Find the list of possible transitions from the current state in the TRANSITIONS map.
+        if (auto it = fsm.transitions.find(fsm.currentState); it != fsm.transitions.end()) {
             const auto& transitionsForState = it->second;
             for (const auto& transition : transitionsForState) {
                 bool allConditionsMet = true;

@@ -3,7 +3,7 @@
 #include "../scenes/game_scene.hpp"
 #include "../util/toml_scene_loader.hpp"
 #include "../systems/player_intent_system.hpp"
-#include "../systems/character_controller_systemm.hpp"
+#include "../systems/character_controller_system.hpp"
 #include "../systems/statemachine_system.hpp"
 #include "../systems/animation.hpp"
 #include "../systems/renderer.hpp"
@@ -14,7 +14,7 @@
 #include "../systems/collision_system.hpp"
 #include "../systems/physics_system.hpp"
 #include "../systems/behavior_system.hpp"
-#include "../systems/character_controller_systemm.hpp"
+#include "../systems/character_controller_system.hpp"
 
 int main(int argc, char* argv[]) {
     Engine engine;

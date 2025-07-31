@@ -8,11 +8,12 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
-#include <entt/entt.hpp>
 
 struct StateMachineComponent {
     // A map of all states available to this FSM, keyed by their name.
     std::unordered_map<entt::hashed_string, std::unique_ptr<IState>> states;
+
+    std::unordered_map<entt::hashed_string, std::vector<Transition>> transitions;
 
     // The key of the currently active state in the map.
     entt::hashed_string currentState{""_hs};

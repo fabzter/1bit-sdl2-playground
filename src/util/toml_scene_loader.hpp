@@ -2,7 +2,7 @@
 
 #include "../core/scene_loader.hpp"
 #include "../components/behavior.hpp"
-#include "../components/statemachine.hpp"
+#include "../components/statemachine/statemachine.hpp"
 #include <toml++/toml.h>
 #include <string>
 #include <unordered_map>
