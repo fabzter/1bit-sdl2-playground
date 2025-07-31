@@ -18,7 +18,7 @@ name = "CRATE"
   layer = 1
   mask = 3 #collides with WORLD (1) and PLAYER (2)
 
-  [entities.component.RigidBody]
+[entities.components.RigidBody]
   bodyType = "DYNAMIC"
   mass = 10.0 #heavier than the player
   restitution = 0.2 #not very bouncy
