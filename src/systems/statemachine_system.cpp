@@ -6,7 +6,6 @@
 
 using namespace entt::literals;
 
-//TODO: the state machine component is still too hardcoded. w should create a series of (classes? enums? interfaces?) that allows us to define statemachines more generically for different necessites!
 void StateMachineSystem::update(entt::registry& registry, InputManager&, ResourceManager&, float deltaTime) {
     auto view = registry.view<StateMachineComponent, const BlackboardComponent>();
 
