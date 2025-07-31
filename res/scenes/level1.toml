@@ -18,7 +18,7 @@ name = "CRATE"
   layer = 1
   mask = 3 #collides with WORLD (1) and PLAYER (2)
 
-[entities.components.RigidBody]
+  [entities.components.RigidBody]
   bodyType = "DYNAMIC"
   mass = 10.0 #heavier than the player
   restitution = 0.2 #not very bouncy
@@ -55,33 +55,6 @@ name = "World"
 [[entities]]
 name = "Player"
 
-  [entities.components.StateMachine]
-  initial_state = "idle"
-
-  # ---- TRANSITIONS TABLE ----
-  [[entities.components.StateMachine.transitions]]
-  from = "idle"
-  to = "walk"
-  [[entities.components.StateMachine.transitions.conditions]]
-  key = "isMoving"
-  value = true
-
-  [[entities.components.StateMachine.transitions]]
-  from = "walk"
-  to = "idle"
-  [[entities.components.StateMachine.transitions.conditions]]
-  key = "isMoving"
-  value = false
-# ------------------------------------
-
-    [entities.components.StateMachine.states.idle]
-    type = "simple"
-    animation = "idle"
-
-    [entities.components.StateMachine.states.walk]
-    type = "simple"
-    animation = "walk"
-
   [entities.components.Transform]
   position = [80.0, 64.0]
   scale = [2.0, 2.0]
@@ -115,18 +88,20 @@ name = "Player"
   [entities.components.Intent]
   # Tag component
 
+  [entities.components.Blackboard]
+  # Empty for now, will be populated by systems
+
   [entities.components.StateMachine]
   initial_state = "idle"
 
-  [entities.components.StateMachine.states.idle]
-  type = "simple"
-  animation = "idle"
+    [entities.components.StateMachine.states.idle]
+    type = "simple"
+    animation = "idle"
 
-  [entities.components.StateMachine.states.walk]
-  type = "simple"
-  animation = "walk"
+    [entities.components.StateMachine.states.walk]
+    type = "simple"
+    animation = "walk"
 
-  # ---- ADD THIS TRANSITIONS TABLE ----
   [[entities.components.StateMachine.transitions]]
   from = "idle"
   to = "walk"
@@ -140,10 +115,6 @@ name = "Player"
   [[entities.components.StateMachine.transitions.conditions]]
   key = "isMoving"
   value = false
-
-  [entities.components.Blackboard]
-  # Empty for now, will be populated by systems
-# ------------------------------------
 
 [[entities]]
 name = "Camera"
