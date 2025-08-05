@@ -6,24 +6,9 @@ project(1bit-playground VERSION 1.0)
 # Add this block near the top
 option(WITH_FILE_LOADERS "Build with support for toml/tmx file loaders" ON)
 if (WITH_FILE_LOADERS)
-    message(STATUS "Building with file loaders (toml++, tmxlite)")
-    # Use FetchContent to manage external dependencies
-    include(FetchContent)
-    FetchContent_Declare(
-            tomlplusplus
-            GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-            GIT_TAG        v3.3.0
-    )
-    FetchContent_MakeAvailable(tomlplusplus)
-    # --- END SECTION ---
 
-    set(TMXLITE_STATIC_LIB ON)
-    set(TMXLITE_USE_ZLIB OFF)
-    set(TMXLITE_USE_ZSTD OFF)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite)
-    include_directories(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite/include)
 else()
-    message(STATUS "Building without legacy file loaders.")
+
 endif ()
 
 # Set C++ Standard
@@ -61,6 +46,7 @@ file(GLOB_RECURSE COMPONENTS_SOURCES "src/components/*.cpp")
 file(GLOB_RECURSE SCENES_SOURCES "src/scenes/*.cpp")
 file(GLOB_RECURSE SYSTEMS_SOURCES "src/systems/*.cpp")
 file(GLOB_RECURSE UTIL_SOURCES "src/util/*.cpp")
+# ----------------------------------------------------------------------
 
 # Define the Executable
 # Combine the sources from our specific directories.
@@ -72,21 +58,44 @@ add_executable(game
     ${UTIL_SOURCES}
 )
 
-# Explicitly tell our 'game' target where to find the toml++ header files.
-target_include_directories(game PRIVATE ${tomlplusplus_INCLUDE_DIRS})
-target_include_directories(game PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        ${CMAKE_BINARY_DIR}/_deps/tomlplusplus-src/include
-)
-
-# Link SDL2 to the Executable
+# Link libs to the Executable
 if (WITH_FILE_LOADERS)
+    message(STATUS "Building with file loaders (toml++, tmxlite)")
+    target_compile_definitions(game PRIVATE WITH_FILE_LOADERS=1)
+
+    # Use FetchContent to manage external dependencies
+    include(FetchContent)
+    FetchContent_Declare(
+            tomlplusplus
+            GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+            GIT_TAG        v3.3.0
+    )
+    FetchContent_MakeAvailable(tomlplusplus)
+    # --- END SECTION ---
+
+    set(TMXLITE_STATIC_LIB ON)
+    set(TMXLITE_USE_ZLIB OFF)
+    set(TMXLITE_USE_ZSTD OFF)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite)
+    include_directories(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite/include)
+
+
+    # Explicitly tell our 'game' target where to find the toml++ header files.
+    target_include_directories(game PRIVATE ${tomlplusplus_INCLUDE_DIRS})
+    target_include_directories(game PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+            ${CMAKE_BINARY_DIR}/_deps/tomlplusplus-src/include
+    )
+
     target_link_libraries(game PRIVATE
             tmxlite
             ${SDL2_LIBRARIES}
     )
 else ()
+    message(STATUS "Building without file loaders.")
+    target_compile_definitions(game PRIVATE WITH_FILE_LOADERS=0)
+
     target_link_libraries(game PRIVATE
             ${SDL2_LIBRARIES}
     )

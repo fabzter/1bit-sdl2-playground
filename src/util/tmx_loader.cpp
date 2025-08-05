@@ -1,3 +1,5 @@
+#if WITH_FILE_LOADERS
+
 #include "tmx_loader.hpp"
 #include "../components/tilemap.hpp"
 #include "../components/transform.hpp"
@@ -143,3 +145,4 @@ bool TmxLoader::load(entt::registry& registry, entt::entity tilemapEntity,
     std::cout << "TmxLoader: Successfully loaded map '" << sourcePath << "'" << std::endl;
     return true;
 }
+#endif
