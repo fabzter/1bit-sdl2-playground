@@ -3,21 +3,28 @@ cmake_minimum_required(VERSION 3.16)
 # Project Definition
 project(1bit-playground VERSION 1.0)
 
-# Use FetchContent to manage external dependencies
-include(FetchContent)
-FetchContent_Declare(
-    tomlplusplus
-    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-    GIT_TAG        v3.3.0
-)
-FetchContent_MakeAvailable(tomlplusplus)
-# --- END SECTION ---
+# Add this block near the top
+option(WITH_FILE_LOADERS "Build with support for toml/tmx file loaders" ON)
+if (WITH_FILE_LOADERS)
+    message(STATUS "Building with file loaders (toml++, tmxlite)")
+    # Use FetchContent to manage external dependencies
+    include(FetchContent)
+    FetchContent_Declare(
+            tomlplusplus
+            GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+            GIT_TAG        v3.3.0
+    )
+    FetchContent_MakeAvailable(tomlplusplus)
+    # --- END SECTION ---
 
-set(TMXLITE_STATIC_LIB ON)
-set(TMXLITE_USE_ZLIB OFF)
-set(TMXLITE_USE_ZSTD OFF)
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite)
-include_directories(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite/include)
+    set(TMXLITE_STATIC_LIB ON)
+    set(TMXLITE_USE_ZLIB OFF)
+    set(TMXLITE_USE_ZSTD OFF)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite)
+    include_directories(${CMAKE_SOURCE_DIR}/src/vendor/tmxlite/tmxlite/include)
+else()
+    message(STATUS "Building without legacy file loaders.")
+endif ()
 
 # Set C++ Standard
 set(CMAKE_CXX_STANDARD 20)
@@ -74,10 +81,16 @@ target_include_directories(game PUBLIC
 )
 
 # Link SDL2 to the Executable
-target_link_libraries(game PRIVATE
-        tmxlite
-        ${SDL2_LIBRARIES}
-)
+if (WITH_FILE_LOADERS)
+    target_link_libraries(game PRIVATE
+            tmxlite
+            ${SDL2_LIBRARIES}
+    )
+else ()
+    target_link_libraries(game PRIVATE
+            ${SDL2_LIBRARIES}
+    )
+endif ()
 
 # Platform-specific settings for Apple (macOS, iOS)
 if(APPLE)

@@ -2,6 +2,7 @@
 #include "system_manager.hpp"
 #include "../scenes/game_scene.hpp"
 #include "../util/toml_scene_loader.hpp"
+#include "../util/hardcoded_scene_loader.hpp"
 #include "../systems/player_intent_system.hpp"
 #include "../systems/character_controller_system.hpp"
 #include "../systems/statemachine_system.hpp"
@@ -24,15 +25,17 @@ int main(int argc, char* argv[]) {
 
     // 1. Create the scene object. It's a simple container.
     auto gameScene = std::make_unique<GameScene>(
-        std::make_unique<TomlSceneLoader>(),
-        engine.getResourceManager()->getBasePath() + "res/scenes/level1.toml"
+        //std::make_unique<TomlSceneLoader>(),
+        //engine.getResourceManager()->getBasePath() + "res/scenes/level1.toml"
+        std::make_unique<HardcodedSceneLoader>(),
+        "Level1"
     );
 
     // 2. Create and configure the SystemManager (The "Assembler" part)
     auto systemManager = std::make_unique<SystemManager>();
     // Define the world boundaries for the Quadtree.
     // For now, we'll hardcode it. Later, this could come from the scene file.
-    //TODO: this data must come frome the scene file or at least the map file. MAy from both! This is a discuccion topic.
+    //TODO: this data must come from the scene file or at least the map file. MAy from both! This is a discussion topic.
     QuadtreeRect worldBounds = {0, 0, 1280, 720};
     // ---- THE CORRECT PHYSICS LOOP ORDER ----
     systemManager->addUpdateSystem(std::make_unique<PlayerIntentSystem>());
