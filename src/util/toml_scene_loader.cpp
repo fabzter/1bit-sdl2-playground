@@ -1,3 +1,5 @@
+#if WITH_FILE_LOADERS
+
 #include "toml_scene_loader.hpp"
 #include "resource_manager.hpp"
 #include "tmx_loader.hpp"
@@ -327,3 +329,4 @@ void TomlSceneLoader::parseBlackboard(entt::registry& registry, entt::entity ent
         }
     }
 }
+#endif
