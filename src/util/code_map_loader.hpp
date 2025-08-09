@@ -6,9 +6,9 @@
 // Forward-declaration
 class ResourceManager;
 
-class HardcodedMapLoader : public ITilemapLoader {
+class CodeMapLoader : public ITilemapLoader {
 public:
-    explicit HardcodedMapLoader(const TMX::Map& mapDescriptor);
+    explicit CodeMapLoader(const TMX::Map& mapDescriptor);
 
     bool load(entt::registry& registry,
               entt::entity tilemapEntity,

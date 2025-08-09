@@ -19,7 +19,7 @@
 #if WITH_FILE_LOADERS
     #include "../util/toml_scene_loader.hpp"
 #else
-    #include "../util/hardcoded_scene_loader.hpp"
+    #include "../util/code_scene_loader.hpp"
 #endif
 
 int main(int argc, char* argv[]) {
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     // --- CODE-DEFINED PATH ---
     std::cout << "INFO: Using code-defined scene loader." << std::endl;
     auto gameScene = std::make_unique<GameScene>(
-        std::make_unique<HardcodedSceneLoader>(),
+        std::make_unique<CodeSceneLoader>(),
         "Level1" // This string now acts as a key, not a file path.
     );
 #endif

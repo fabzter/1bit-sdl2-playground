@@ -1,4 +1,4 @@
-#include "hardcoded_map_loader.hpp"
+#include "code_map_loader.hpp"
 #include "../components/tilemap.hpp"
 #include "../components/transform.hpp"
 #include "../components/collider.hpp"
@@ -13,10 +13,10 @@ static uint32_t getLayerBitmask(const std::string& name) {
     return 0;
 }
 
-HardcodedMapLoader::HardcodedMapLoader(const TMX::Map& mapDescriptor)
+CodeMapLoader::CodeMapLoader(const TMX::Map& mapDescriptor)
     : m_mapDescriptor(mapDescriptor) {}
 
-bool HardcodedMapLoader::load(entt::registry& registry, entt::entity tilemapEntity,
+bool CodeMapLoader::load(entt::registry& registry, entt::entity tilemapEntity,
                               ResourceManager& resourceManager, const std::string&) {
 
     // 1. Load Tileset Assets
@@ -70,11 +70,11 @@ bool HardcodedMapLoader::load(entt::registry& registry, entt::entity tilemapEnti
         }, layerVariant);
     }
     
-    std::cout << "HardcodedMapLoader: Successfully processed map descriptor." << std::endl;
+    std::cout << "CodeMapLoader: Successfully processed map descriptor." << std::endl;
     return true;
 }
 
-void HardcodedMapLoader::createCollisionObjects(entt::registry& registry, const TMX::ObjectGroup& objectGroup) {
+void CodeMapLoader::createCollisionObjects(entt::registry& registry, const TMX::ObjectGroup& objectGroup) {
     for (const auto& objectDesc : objectGroup.objects) {
         const auto entity = registry.create();
 

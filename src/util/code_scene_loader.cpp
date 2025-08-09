@@ -1,5 +1,5 @@
-#include "hardcoded_scene_loader.hpp"
-#include "hardcoded_map_loader.hpp"
+#include "code_scene_loader.hpp"
+#include "code_map_loader.hpp"
 #include "resource_manager.hpp"
 #include "../scenes/definitions/level1.hpp"
 #include "../core/context.hpp"
@@ -24,12 +24,12 @@
 
 #include <iostream>
 
-bool HardcodedSceneLoader::load(entt::registry& registry, SDL_Renderer* renderer,
+bool CodeSceneLoader::load(entt::registry& registry, SDL_Renderer* renderer,
                                 ResourceManager* resourceManager, const std::string& sourcePath) {
 
     // The sourcePath acts as a key to select which hardcoded scene to load.
     if (sourcePath != "Level1") {
-        std::cerr << "HardcodedSceneLoader: Unknown source path '" << sourcePath << "'" << std::endl;
+        std::cerr << "CodeSceneLoader: Unknown source path '" << sourcePath << "'" << std::endl;
         return false;
     }
 
@@ -115,18 +115,18 @@ bool HardcodedSceneLoader::load(entt::registry& registry, SDL_Renderer* renderer
 
 // --- Private Helper Methods ---
 
-void HardcodedSceneLoader::loadMapData(entt::registry& registry, ResourceManager* resourceManager, const TMX::Map& mapDesc) {
+void CodeSceneLoader::loadMapData(entt::registry& registry, ResourceManager* resourceManager, const TMX::Map& mapDesc) {
     const auto worldEntity = registry.create();
     registry.emplace<TagComponent>(worldEntity, "World");
 
     // Use the dedicated map loader for this task
-    HardcodedMapLoader mapLoader(mapDesc);
+    CodeMapLoader mapLoader(mapDesc);
     mapLoader.load(registry, worldEntity, *resourceManager, ""); // sourcePath is ignored
 }
 
 // --- Component Creation Overloads ---
 
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const TransformDescriptor& desc) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const TransformDescriptor& desc) {
     // Explicitly convert from descriptor's Vec2f to component's Vec2f
     registry.emplace<TransformComponent>(entity,
         Vec2f{desc.position.x, desc.position.y},
@@ -134,7 +134,7 @@ void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entit
     );
 }
 
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const SpriteDescriptor& desc) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const SpriteDescriptor& desc) {
     auto& sprite = registry.emplace<SpriteComponent>(entity);
     sprite.assetId = desc.assetId;
     sprite.isAnimated = desc.isAnimated;
@@ -142,7 +142,7 @@ void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entit
     sprite.orderInLayer = desc.orderInLayer;
 }
 
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const RigidBodyDescriptor& desc) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const RigidBodyDescriptor& desc) {
     auto& rb = registry.emplace<RigidBodyComponent>(entity);
     rb.bodyType = static_cast<BodyType>(desc.bodyType);
     rb.mass = desc.mass;
@@ -150,7 +150,7 @@ void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entit
     rb.damping = desc.damping;
 }
 
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const ColliderDescriptor& desc) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const ColliderDescriptor& desc) {
     auto& col = registry.emplace<ColliderComponent>(entity);
     col.size = desc.size;
     col.offset = desc.offset;
@@ -160,11 +160,11 @@ void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entit
     col.is_trigger = desc.isTrigger;
 }
 
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const MovementDescriptor& desc) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const MovementDescriptor& desc) {
     registry.emplace<MovementComponent>(entity, desc.speed);
 }
 
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const BehaviorDescriptor& desc) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const BehaviorDescriptor& desc) {
     auto& behavior = registry.emplace<BehaviorComponent>(entity);
     if (desc.type == "collectible") {
         behavior.responder = std::make_unique<CollectibleBehavior>();
@@ -172,7 +172,7 @@ void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entit
     // else if (...) for other behaviors
 }
 
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const StateMachineDescriptor& desc) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const StateMachineDescriptor& desc) {
     auto& fsm = registry.emplace<StateMachineComponent>(entity);
     fsm.currentState = entt::hashed_string{desc.initialState.c_str()};
 
@@ -199,15 +199,15 @@ void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entit
 }
 
 // --- Tag Component Overloads ---
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const PlayerControlTag&) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const PlayerControlTag&) {
     registry.emplace<PlayerControlComponent>(entity);
 }
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const IntentTag&) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const IntentTag&) {
     registry.emplace<IntentComponent>(entity);
 }
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const CameraTag&) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const CameraTag&) {
     registry.emplace<CameraComponent>(entity);
 }
-void HardcodedSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const BlackboardTag&) {
+void CodeSceneLoader::createComponent(entt::registry& registry, entt::entity entity, const BlackboardTag&) {
     registry.emplace<BlackboardComponent>(entity);
 }
